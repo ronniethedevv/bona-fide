@@ -1,0 +1,26 @@
+{
+  "label": "dumping-mm",
+  "pair": "TOKEN_USDT",
+  "base": "TOKEN",
+  "quote": "USDT",
+  "epochSecs": 120,
+  "sampleSecs": 30,
+  "epochs": [
+    {
+      "samples": [
+        { "publicBestBid": "1.0000", "publicBestAsk": "1.0020", "mmBids": [{ "price": "0.9990", "size": "20000" }], "mmAsks": [{ "price": "1.0030", "size": "20000" }] },
+        { "publicBestBid": "0.9980", "publicBestAsk": "1.0000", "mmBids": [{ "price": "0.9970", "size": "20000" }], "mmAsks": [{ "price": "1.0010", "size": "20000" }] },
+        { "publicBestBid": "0.9950", "publicBestAsk": "0.9970", "mmBids": [{ "price": "0.9940", "size": "20000" }], "mmAsks": [{ "price": "0.9980", "size": "20000" }] },
+        { "publicBestBid": "0.9920", "publicBestAsk": "0.9940", "mmBids": [{ "price": "0.9910", "size": "20000" }], "mmAsks": [{ "price": "0.9950", "size": "20000" }] }
+      ],
+      "trades": [
+        { "side": "sell", "baseQty": "5.00" },
+        { "side": "sell", "baseQty": "3.50" },
+        { "side": "buy", "baseQty": "0.10" }
+      ],
+      "withdrawals": [
+        { "baseQty": "2.00" }
+      ]
+    }
+  ]
+}

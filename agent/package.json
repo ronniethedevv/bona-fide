@@ -17,11 +17,12 @@
     "@neardefi/shade-agent-js": "2.2.0",
     "dotenv": "17.4.2",
     "hono": "4.12.16",
-    "tweetnacl": "1.0.3",
+    "libsodium-wrappers": "0.7.15",
     "zod": "3.25.76",
     "decimal.js": "10.6.0"
   },
   "devDependencies": {
+    "@types/libsodium-wrappers": "0.7.14",
     "@types/node": "20.19.39",
     "typescript": "5.9.3",
     "tsx": "4.21.0",
