@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Invariant I10 — no AI context file may ever be tracked in the main repo.
+  no-context:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard against context files
+        run: bash scripts/check-no-context.sh
+
+  contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contract
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+          rustup component add rustfmt clippy
+      - run: cargo fmt --check
+      - run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+      - run: cargo check --target wasm32-unknown-unknown
+      - run: cargo test
+
+  agent:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agent/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build

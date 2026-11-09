@@ -1,0 +1,26 @@
+# AI context — never commit (no trailing slash, so a .context symlink is ignored too)
+.context
+CLAUDE.md
+agents.md
+AGENTS.md
+docs/context/
+*-spec.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets*.json
+
+# Real exchange data
+fixtures/live/
+recordings/
+
+# Build
+node_modules/
+dist/
+target/
+.next/
+coverage/

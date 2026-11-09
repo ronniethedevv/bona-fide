@@ -1,0 +1,30 @@
+{
+  "name": "bona-fide-agent",
+  "version": "0.1.0",
+  "description": "Bona Fide Shade Agent — reads a committed MM account read-only inside a TEE, scores it deterministically, and submits signed verdicts to NEAR",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "tsx dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.0.1",
+    "@neardefi/shade-agent-js": "2.2.0",
+    "dotenv": "17.4.2",
+    "hono": "4.12.16",
+    "tweetnacl": "1.0.3",
+    "zod": "3.25.76",
+    "decimal.js": "10.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.39",
+    "typescript": "5.9.3",
+    "tsx": "4.21.0",
+    "vitest": "2.1.9"
+  }
+}
