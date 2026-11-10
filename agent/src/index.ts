@@ -19,6 +19,7 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { BinanceReadOnlyClient } from "./exchange/binance.js";
 import { verifyKeyReadOnly } from "./exchange/verify.js";
+import { AccountRegistry, accountTag, deriveFpKey, globalFingerprint } from "./identity.js";
 import { KeyIntakeError, openSealedKey } from "./keys/intake.js";
 import { deriveEnclaveKeypair, publicKeyHex, type EnclaveKeypair } from "./keys/keypair.js";
 import { getEnclaveSeed } from "./keys/seed.js";
@@ -33,7 +34,9 @@ const SUBMIT_GAS = BigInt("300000000000000");
 // Enclave-only state (never serialized/logged).
 let enclaveKeypair: EnclaveKeypair | null = null;
 let agentClient: ShadeClient | null = null;
+let fpKey: Buffer | null = null; // HMAC key for account fingerprints (TEE-derived)
 const keyStore = new KeyStore();
+const registry = new AccountRegistry();
 const exchange = new BinanceReadOnlyClient();
 
 const IntakeBody = z.object({ mandate_id: z.number().int().nonnegative(), sealed: z.string().min(1) });
@@ -101,8 +104,33 @@ app.post("/api/intake", async (c) => {
     return c.json({ accepted: false, reason: check.reason }); // rejected key is dropped (never stored)
   }
 
+  // Identity binding (best-effort): prove the MM controls this exchange account,
+  // de-dupe against other MM identities, and attest a privacy-preserving tag.
+  let verified = false;
+  if (agentClient && fpKey) {
+    try {
+      const { uid } = await exchange.getAccount({ apiKey: payload.api_key, apiSecret: payload.api_secret });
+      const uidStr = String(uid);
+      const mandate = (await agentClient.view<Record<string, unknown>>({
+        methodName: "get_mandate",
+        args: { id: String(payload.mandate_id) },
+      })) as { mm?: string } | null;
+      if (mandate?.mm && registry.claim(globalFingerprint(fpKey, uidStr), mandate.mm) === "conflict") {
+        return c.json({ accepted: false, reason: "ACCOUNT_CLAIMED" }); // another MM already bound this account
+      }
+      await agentClient.call({
+        methodName: "attest_account_binding",
+        args: { mandate_id: String(payload.mandate_id), account_tag: accountTag(fpKey, uidStr, payload.mandate_id) },
+        gas: SUBMIT_GAS,
+      });
+      verified = true;
+    } catch {
+      verified = false; // binding is an enhancement; a verified read-only key is still held
+    }
+  }
+
   keyStore.set(payload.mandate_id, { apiKey: payload.api_key, apiSecret: payload.api_secret });
-  return c.json({ accepted: true });
+  return c.json({ accepted: true, verified });
 });
 
 export { app };
@@ -197,9 +225,11 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
     await sleep(10_000);
   }
 
-  const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
+  const seed = await getEnclaveSeed();
+  const keypair = await deriveEnclaveKeypair(seed);
   enclaveKeypair = keypair;
   agentClient = agent;
+  fpKey = deriveFpKey(seed);
   const encPubkey = await publicKeyHex(keypair);
   await withRpcRetry("set_enc_pubkey", () =>
     agent.call({

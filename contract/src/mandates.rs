@@ -52,6 +52,14 @@ pub struct Mandate {
     pub end_ts: U64,
     pub status: MandateStatus,
     pub terms_hash: String,
+    /// True once the attested agent has confirmed the MM controls a read-only
+    /// key to the committed exchange account (identity binding).
+    pub account_verified: bool,
+    /// A per-mandate, privacy-preserving commitment to the exchange account id:
+    /// `HMAC(enclave_key, account_uid ‖ mandate_id)`, hex. One-way and salted
+    /// per mandate, so it is NOT linkable to the same account in other mandates,
+    /// and the raw UID is never revealed. Immutable once set (account-swap guard).
+    pub account_tag: Option<String>,
 }
 
 /// sha256(canonical JSON of the terms), hex-encoded. Deterministic: serde emits
@@ -117,6 +125,8 @@ impl Contract {
             end_ts: terms.end_ts,
             status: MandateStatus::Proposed,
             terms_hash,
+            account_verified: false,
+            account_tag: None,
         };
 
         Event::MandateProposed {
@@ -170,5 +180,40 @@ impl Contract {
         self.mm_summaries.insert(mm, summary);
 
         Event::MandateCosigned { id }.emit();
+    }
+
+    /// Bind the mandate to the committed exchange account (identity binding).
+    ///
+    /// Only the attested agent may call (it is the only party that sees the real
+    /// account). `account_tag` is a per-mandate HMAC commitment to the account's
+    /// UID — never the UID itself. The first binding sets it and marks the
+    /// mandate verified; a later call must match (the account can't be swapped
+    /// mid-mandate without the record showing it). Global de-duplication (one
+    /// account can't back two MM identities) is enforced privately inside the
+    /// enclave, so no cross-mandate-linkable id is ever published.
+    pub fn attest_account_binding(&mut self, mandate_id: U64, account_tag: String) {
+        self.assert_registered_valid_agent();
+        require!(
+            account_tag.len() == 64 && account_tag.bytes().all(|b| b.is_ascii_hexdigit()),
+            "account_tag must be 64 hex chars"
+        );
+        let mandate = self
+            .mandates
+            .get_mut(&mandate_id.0)
+            .expect("Mandate not found");
+        require!(
+            mandate.status == MandateStatus::Active,
+            "Mandate is not active"
+        );
+        match &mandate.account_tag {
+            None => {
+                mandate.account_tag = Some(account_tag);
+                mandate.account_verified = true;
+            }
+            Some(existing) => require!(
+                *existing == account_tag,
+                "account mismatch: the committed account cannot be changed"
+            ),
+        }
     }
 }

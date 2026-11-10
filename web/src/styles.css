@@ -126,6 +126,11 @@ h2 {
 .muted {
   color: var(--muted);
 }
+.verified {
+  color: var(--pass);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 .error {
   color: var(--fail);
 }

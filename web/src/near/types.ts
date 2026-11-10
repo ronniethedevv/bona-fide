@@ -36,6 +36,8 @@ export interface Mandate {
   end_ts: string;
   status: MandateStatus;
   terms_hash: string;
+  account_verified: boolean;
+  account_tag: string | null;
 }
 
 export interface Verdict {
