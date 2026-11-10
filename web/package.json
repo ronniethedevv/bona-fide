@@ -1,7 +1,7 @@
 {
   "name": "bona-fide-web",
   "version": "0.1.0",
-  "description": "Bona Fide web app — MM directory, profiles, mandates, create/co-sign, connect-key",
+  "description": "Bona Fide web app — MM directory, profiles, mandates, create/co-sign, connect key",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
@@ -12,10 +12,19 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@near-wallet-selector/core": "10.1.4",
+    "@near-wallet-selector/meteor-wallet": "10.1.4",
+    "@near-wallet-selector/modal-ui": "10.1.4",
+    "@near-wallet-selector/my-near-wallet": "10.1.4",
+    "@near-js/transactions": "2.5.1",
+    "libsodium-wrappers": "0.7.15",
+    "near-api-js": "7.4.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-router-dom": "7.18.5"
   },
   "devDependencies": {
+    "@types/libsodium-wrappers": "0.7.14",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@vitejs/plugin-react": "4.6.0",

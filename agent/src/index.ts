@@ -2,24 +2,69 @@
  * Bona Fide Shade Agent entry point.
  *
  * On start it registers the attested agent, publishes the enclave's X25519
- * public key (`set_enc_pubkey`), and serves a small HTTP surface (health, and —
- * in a later phase — key intake and the simulated key-check panel). The scoring
- * runner and verdict submission live in `runner.ts` / `submit.ts`.
+ * public key (`set_enc_pubkey`), and serves HTTP: health + the key-intake
+ * endpoint (`POST /api/intake`), which opens a sealed key, runs the read-only
+ * permission check, and either holds it in enclave memory or returns a rejection
+ * code. Scoring + submission live in `runner.ts` / `submit.ts`.
  *
- * Built on the Shade Agent template (NearDeFi/shade-agent-template @ 816b75b)
- * via `@neardefi/shade-agent-js`. No keys or secrets are ever logged (I3).
+ * Built on the Shade Agent template via `@neardefi/shade-agent-js`. No keys or
+ * secrets are ever logged (I3).
  */
 import { serve } from "@hono/node-server";
 import { ShadeClient } from "@neardefi/shade-agent-js";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { z } from "zod";
+import { BinanceReadOnlyClient } from "./exchange/binance.js";
+import { verifyKeyReadOnly } from "./exchange/verify.js";
+import { KeyIntakeError, openSealedKey } from "./keys/intake.js";
 import { deriveEnclaveKeypair, publicKeyHex, type EnclaveKeypair } from "./keys/keypair.js";
 import { getEnclaveSeed } from "./keys/seed.js";
+import { KeyStore } from "./keys/store.js";
 
 const SUBMIT_GAS = BigInt("300000000000000");
 
+// Enclave-only state (never serialized/logged).
+let enclaveKeypair: EnclaveKeypair | null = null;
+const keyStore = new KeyStore();
+const exchange = new BinanceReadOnlyClient();
+
+const IntakeBody = z.object({ mandate_id: z.number().int().nonnegative(), sealed: z.string().min(1) });
+
 const app = new Hono();
+app.use("/api/*", cors());
 app.get("/", (c) => c.json({ service: "bona-fide-agent", status: "ok" }));
-app.get("/healthz", (c) => c.json({ status: "ok" }));
+app.get("/healthz", (c) => c.json({ status: "ok", keys: keyStore.size }));
+
+/** Receive a browser-sealed key, verify it is read-only, and hold or reject it. */
+app.post("/api/intake", async (c) => {
+  if (!enclaveKeypair) return c.json({ accepted: false, reason: "UNAVAILABLE" }, 503);
+
+  let body: z.infer<typeof IntakeBody>;
+  try {
+    body = IntakeBody.parse(await c.req.json());
+  } catch {
+    return c.json({ accepted: false, reason: "INVALID" }, 400);
+  }
+
+  let payload;
+  try {
+    payload = await openSealedKey(body.sealed, enclaveKeypair);
+  } catch (e) {
+    return c.json({ accepted: false, reason: e instanceof KeyIntakeError ? e.code : "INVALID" });
+  }
+
+  const check = await verifyKeyReadOnly(exchange, {
+    apiKey: payload.api_key,
+    apiSecret: payload.api_secret,
+  });
+  if (!check.ok) {
+    return c.json({ accepted: false, reason: check.reason }); // rejected key is dropped (never stored)
+  }
+
+  keyStore.set(payload.mandate_id, { apiKey: payload.api_key, apiSecret: payload.api_secret });
+  return c.json({ accepted: true });
+});
 
 export { app };
 
@@ -29,10 +74,7 @@ function requireEnv(name: string): string {
   return v;
 }
 
-/**
- * Register the attested agent and publish its enclave public key. Returns the
- * client and keypair so the runner can read mandates and submit verdicts.
- */
+/** Register the attested agent and publish its enclave public key. */
 export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: EnclaveKeypair }> {
   const agent = await ShadeClient.create({
     networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
@@ -47,7 +89,6 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
   console.log("agent account:", agent.accountId());
   if ((await agent.balance()) < 0.2) await agent.fund(0.3);
 
-  // Register (local mode needs the account whitelisted first; TEE mode is direct).
   for (;;) {
     const whitelisted = await agent.isWhitelisted();
     if (whitelisted === null || whitelisted) {
@@ -58,8 +99,8 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
     await new Promise((r) => setTimeout(r, 10_000));
   }
 
-  // Publish the enclave public key so browsers can seal keys to it.
   const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
+  enclaveKeypair = keypair;
   await agent.call({
     methodName: "set_enc_pubkey",
     args: { enc_pubkey: await publicKeyHex(keypair) },

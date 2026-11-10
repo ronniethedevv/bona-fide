@@ -1,19 +1,24 @@
-/**
- * Bona Fide web app — Phase 0 skeleton.
- *
- * Screens (built in Phase 4): Directory (/), MM profile (/mm/:account),
- * Mandate (/mandate/:id), Create (/new), Co-sign (/mandate/:id/cosign),
- * Connect key (/mandate/:id/key). NEAR wallet selector is wired in P4.1.
- * See docs/context/ui_context.md for screens and display formats.
- */
-import type { ReactElement } from "react";
+import { Route, Routes } from "react-router-dom";
+import { Layout } from "./components/Layout.js";
+import { Cosign } from "./pages/Cosign.js";
+import { ConnectKey } from "./pages/ConnectKey.js";
+import { Directory } from "./pages/Directory.js";
+import { MandatePage } from "./pages/MandatePage.js";
+import { MmProfile } from "./pages/MmProfile.js";
+import { NewMandate } from "./pages/NewMandate.js";
 
-export function App(): ReactElement {
+export function App() {
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 640, margin: "4rem auto", padding: "0 1rem" }}>
-      <h1>Bona Fide</h1>
-      <p>Prove you kept your market-making deals — without exposing your book.</p>
-      <p style={{ color: "#888" }}>Phase 0 scaffold. Screens arrive in Phase 4.</p>
-    </main>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Directory />} />
+        <Route path="/mm/:account" element={<MmProfile />} />
+        <Route path="/mandate/:id" element={<MandatePage />} />
+        <Route path="/mandate/:id/cosign" element={<Cosign />} />
+        <Route path="/mandate/:id/key" element={<ConnectKey />} />
+        <Route path="/new" element={<NewMandate />} />
+        <Route path="*" element={<p className="muted">Not found.</p>} />
+      </Routes>
+    </Layout>
   );
 }
