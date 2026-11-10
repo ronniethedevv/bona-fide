@@ -270,3 +270,64 @@ fn record_missed_after_grace_records_miss() {
     }));
     assert!(err.is_err());
 }
+
+fn tag_a() -> String {
+    "ab".repeat(32) // 64 hex chars
+}
+fn tag_b() -> String {
+    "cd".repeat(32)
+}
+
+#[test]
+fn attest_binding_sets_verified() {
+    let mut c = setup();
+    register_agent_local(&mut c, 0);
+    let id = propose(&mut c);
+    allowlist_and_cosign(&mut c, id);
+
+    assert!(!c.get_mandate(U64::from(id)).unwrap().account_verified);
+    testing_env!(ctx(agent(), None, 0).build());
+    c.attest_account_binding(U64::from(id), tag_a());
+
+    let m = c.get_mandate(U64::from(id)).unwrap();
+    assert!(m.account_verified);
+    assert_eq!(m.account_tag, Some(tag_a()));
+    // Re-attesting the same tag is idempotent.
+    testing_env!(ctx(agent(), None, 0).build());
+    c.attest_account_binding(U64::from(id), tag_a());
+}
+
+#[test]
+#[should_panic(expected = "Agent not registered")]
+fn attest_binding_rejects_non_agent() {
+    let mut c = setup();
+    let id = propose(&mut c);
+    allowlist_and_cosign(&mut c, id);
+    testing_env!(ctx(mm(), None, 0).build());
+    c.attest_account_binding(U64::from(id), tag_a());
+}
+
+#[test]
+#[should_panic(expected = "account mismatch")]
+fn attest_binding_is_immutable_account() {
+    let mut c = setup();
+    register_agent_local(&mut c, 0);
+    let id = propose(&mut c);
+    allowlist_and_cosign(&mut c, id);
+    testing_env!(ctx(agent(), None, 0).build());
+    c.attest_account_binding(U64::from(id), tag_a());
+    // A different account tag (an account swap) must be rejected.
+    testing_env!(ctx(agent(), None, 0).build());
+    c.attest_account_binding(U64::from(id), tag_b());
+}
+
+#[test]
+#[should_panic(expected = "64 hex")]
+fn attest_binding_rejects_bad_tag() {
+    let mut c = setup();
+    register_agent_local(&mut c, 0);
+    let id = propose(&mut c);
+    allowlist_and_cosign(&mut c, id);
+    testing_env!(ctx(agent(), None, 0).build());
+    c.attest_account_binding(U64::from(id), "ab".repeat(31)); // 62 chars
+}

@@ -72,6 +72,11 @@ export class BinanceReadOnlyClient {
     return this.#signedGet("/sapi/v1/account/apiRestrictions", {}, cred);
   }
 
+  /** GET /api/v3/account — account info, incl. the stable numeric `uid`. */
+  getAccount(cred: BinanceCredential): Promise<{ uid: number }> {
+    return this.#signedGet("/api/v3/account", {}, cred);
+  }
+
   /** GET /api/v3/openOrders — the account's open orders for a symbol. */
   getOpenOrders(cred: BinanceCredential, symbol: string): Promise<unknown[]> {
     return this.#signedGet("/api/v3/openOrders", { symbol }, cred);

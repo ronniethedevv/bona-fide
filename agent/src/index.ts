@@ -17,6 +17,7 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { BinanceReadOnlyClient } from "./exchange/binance.js";
 import { verifyKeyReadOnly } from "./exchange/verify.js";
+import { AccountRegistry, accountTag, deriveFpKey, globalFingerprint } from "./identity.js";
 import { KeyIntakeError, openSealedKey } from "./keys/intake.js";
 import { deriveEnclaveKeypair, publicKeyHex, type EnclaveKeypair } from "./keys/keypair.js";
 import { getEnclaveSeed } from "./keys/seed.js";
@@ -26,7 +27,10 @@ const SUBMIT_GAS = BigInt("300000000000000");
 
 // Enclave-only state (never serialized/logged).
 let enclaveKeypair: EnclaveKeypair | null = null;
+let fpKey: Buffer | null = null; // HMAC key for account fingerprints (TEE-derived)
+let agent: ShadeClient | null = null;
 const keyStore = new KeyStore();
+const registry = new AccountRegistry();
 const exchange = new BinanceReadOnlyClient();
 
 const IntakeBody = z.object({ mandate_id: z.number().int().nonnegative(), sealed: z.string().min(1) });
@@ -62,8 +66,33 @@ app.post("/api/intake", async (c) => {
     return c.json({ accepted: false, reason: check.reason }); // rejected key is dropped (never stored)
   }
 
+  // Identity binding (best-effort): prove the MM controls this exchange account,
+  // de-dupe against other MM identities, and attest a privacy-preserving tag.
+  let verified = false;
+  if (agent && fpKey) {
+    try {
+      const { uid } = await exchange.getAccount({ apiKey: payload.api_key, apiSecret: payload.api_secret });
+      const uidStr = String(uid);
+      const mandate = (await agent.view<Record<string, unknown>>({
+        methodName: "get_mandate",
+        args: { id: String(payload.mandate_id) },
+      })) as { mm?: string } | null;
+      if (mandate?.mm && registry.claim(globalFingerprint(fpKey, uidStr), mandate.mm) === "conflict") {
+        return c.json({ accepted: false, reason: "ACCOUNT_CLAIMED" }); // another MM already bound this account
+      }
+      await agent.call({
+        methodName: "attest_account_binding",
+        args: { mandate_id: String(payload.mandate_id), account_tag: accountTag(fpKey, uidStr, payload.mandate_id) },
+        gas: SUBMIT_GAS,
+      });
+      verified = true;
+    } catch {
+      verified = false; // binding is an enhancement; a verified read-only key is still held
+    }
+  }
+
   keyStore.set(payload.mandate_id, { apiKey: payload.api_key, apiSecret: payload.api_secret });
-  return c.json({ accepted: true });
+  return c.json({ accepted: true, verified });
 });
 
 export { app };
@@ -76,7 +105,7 @@ function requireEnv(name: string): string {
 
 /** Register the attested agent and publish its enclave public key. */
 export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: EnclaveKeypair }> {
-  const agent = await ShadeClient.create({
+  const client = await ShadeClient.create({
     networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
     agentContractId: requireEnv("AGENT_CONTRACT_ID"),
     sponsor: {
@@ -86,28 +115,31 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
   });
 
   // eslint-disable-next-line no-console
-  console.log("agent account:", agent.accountId());
-  if ((await agent.balance()) < 0.2) await agent.fund(0.3);
+  console.log("agent account:", client.accountId());
+  if ((await client.balance()) < 0.2) await client.fund(0.3);
 
   for (;;) {
-    const whitelisted = await agent.isWhitelisted();
+    const whitelisted = await client.isWhitelisted();
     if (whitelisted === null || whitelisted) {
-      if (await agent.register()) break;
+      if (await client.register()) break;
     }
     // eslint-disable-next-line no-console
-    console.log("waiting to be whitelisted:", agent.accountId());
+    console.log("waiting to be whitelisted:", client.accountId());
     await new Promise((r) => setTimeout(r, 10_000));
   }
 
-  const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
+  const seed = await getEnclaveSeed();
+  const keypair = await deriveEnclaveKeypair(seed);
   enclaveKeypair = keypair;
-  await agent.call({
+  fpKey = deriveFpKey(seed);
+  agent = client;
+  await client.call({
     methodName: "set_enc_pubkey",
     args: { enc_pubkey: await publicKeyHex(keypair) },
     gas: SUBMIT_GAS,
   });
 
-  return { agent, keypair };
+  return { agent: client, keypair };
 }
 
 if (process.env.NODE_ENV !== "test") {
