@@ -14,6 +14,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <nav className="topnav">
           <Link to="/">Directory</Link>
           <Link to="/new">New mandate</Link>
+          <Link to="/key-check">Try the key check</Link>
         </nav>
         <div className="spacer" />
         {accountId ? (

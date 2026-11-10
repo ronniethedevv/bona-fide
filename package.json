@@ -1,0 +1,13 @@
+{
+  "name": "bona-fide",
+  "version": "0.1.0",
+  "description": "Prove market makers kept their deals — inside a sealed enclave, recorded on NEAR.",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "demo:replay": "npm --prefix agent run demo:replay",
+    "test:agent": "npm --prefix agent test",
+    "test:contract": "cd contract && cargo test",
+    "build:web": "npm --prefix web run build"
+  }
+}

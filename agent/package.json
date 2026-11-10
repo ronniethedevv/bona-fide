@@ -10,7 +10,8 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo:replay": "tsx scripts/demo-replay.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.0.1",
