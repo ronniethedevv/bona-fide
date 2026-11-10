@@ -2,6 +2,8 @@
 
 Let market makers prove they kept their deals — inside a sealed enclave, so no one sees their book.
 
+**Most agentic-finance security is about safely letting an agent _spend_. Bona Fide's agent never spends — it only _reads_ and _signs attestations_, so the whole fund-movement attack surface is gone.** It's scoped permissioning taken to its limit: a read-only exchange key, held in a TEE, with a deterministic guard layer between the agent and every signature. The agent can't move money, so there's nothing to contain.
+
 ---
 
 ## How to test
@@ -59,6 +61,15 @@ Bona Fide fixes the trust problem without the exposure:
 - **contract/** — Rust (near-sdk), extends the Shade Agent template: mandates, the project allowlist, agent registration + published enclave key, append-only verdicts, missed-epoch recording.
 - **agent/** — TypeScript Shade Agent: enclave keypair, sealed-box key intake, a **GET-only** exchange client, the read-only permission check, the deterministic scorer, pre-sign guards, and verdict submission.
 - **web/** — Vite + React: directory, profiles, mandate timelines, create/co-sign, connect-key.
+
+### Scoped permissioning, taken to its safest form
+
+The emerging playbook for autonomous agents in finance is: isolate root keys, sign inside a TEE, whitelist what the agent can touch, and put a deterministic guard between the agent's output and any signature. Bona Fide applies all four — and removes the hardest part by giving the agent **no spend authority at all**:
+
+- **Isolation:** root wallets never enter the agent. The only credential it holds is a read-only exchange key, sealed to a key that exists only inside the enclave.
+- **Whitelisting / Guard Mode:** the exchange client exposes **only GET** requests (I1), and a key with any trade/transfer/withdraw right is rejected before first use (I2).
+- **Deterministic output guards:** a set of pure pre-sign checks runs between the scorer and the signature — nothing is signed unless the mandate matches, the epoch has closed, metrics are in range, the data source is recorded, and the agent's code is still approved.
+- **Attested code:** the contract accepts a verdict only from an agent whose measurements are approved, so the guards can't be bypassed by swapping the code.
 
 ## NEAR components used
 
