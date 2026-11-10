@@ -46,7 +46,7 @@ fn register_agent_local(c: &mut Contract, ts_ms: u64) {
     testing_env!(ctx(owner(), None, ts_ms).build());
     c.whitelist_agent_for_local(agent());
     testing_env!(ctx(agent(), Some(DEPOSIT), ts_ms).build());
-    c.register_agent(create_mock_dstack_attestation(), ENC_PK_HEX.to_string());
+    c.register_agent(create_mock_dstack_attestation());
 }
 
 fn demo_terms() -> MandateTerms {
@@ -104,12 +104,29 @@ fn new_sets_owner() {
 }
 
 #[test]
-fn register_agent_stores_enc_pubkey() {
+fn register_then_publish_enc_pubkey() {
     let mut c = setup();
     register_agent_local(&mut c, 0);
-    let view = c.get_agent(agent()).expect("agent registered");
-    assert_eq!(view.enc_pubkey, ENC_PK_HEX);
+    // No key published yet.
+    assert_eq!(c.get_agent(agent()).expect("registered").enc_pubkey, None);
+    assert_eq!(c.get_agent_pubkey(agent()), None);
+
+    // Agent publishes its enclave key.
+    testing_env!(ctx(agent(), None, 0).build());
+    c.set_enc_pubkey(ENC_PK_HEX.to_string());
+    assert_eq!(
+        c.get_agent(agent()).unwrap().enc_pubkey.as_deref(),
+        Some(ENC_PK_HEX)
+    );
     assert_eq!(c.get_agent_pubkey(agent()).unwrap(), ENC_PK_HEX);
+}
+
+#[test]
+#[should_panic(expected = "Agent not registered")]
+fn set_enc_pubkey_requires_registration() {
+    let mut c = setup();
+    testing_env!(ctx(agent(), None, 0).build());
+    c.set_enc_pubkey(ENC_PK_HEX.to_string());
 }
 
 #[test]

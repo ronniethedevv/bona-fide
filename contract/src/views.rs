@@ -19,7 +19,7 @@ pub struct AgentView {
     pub measurements: FullMeasurementsHex,
     pub ppid: Ppid,
     pub valid_until_ms: U64,
-    pub enc_pubkey: String,
+    pub enc_pubkey: Option<String>,
     pub validity: AgentValidity,
 }
 
@@ -48,7 +48,7 @@ impl Contract {
             measurements: agent.measurements.clone(),
             ppid: agent.ppid.clone(),
             valid_until_ms: U64::from(agent.valid_until_ms),
-            enc_pubkey: hex::encode(agent.enc_pubkey),
+            enc_pubkey: agent.enc_pubkey.map(hex::encode),
             validity,
         }
     }
@@ -113,7 +113,8 @@ impl Contract {
     pub fn get_agent_pubkey(&self, account_id: AccountId) -> Option<String> {
         self.agents
             .get(&account_id)
-            .map(|a| hex::encode(a.enc_pubkey))
+            .and_then(|a| a.enc_pubkey)
+            .map(hex::encode)
     }
 
     pub fn get_whitelisted_agents_for_local(&self) -> Vec<AccountId> {

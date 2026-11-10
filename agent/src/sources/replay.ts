@@ -25,7 +25,8 @@ export const ReplayFixtureSchema = z.object({
 });
 export type ReplayFixture = z.infer<typeof ReplayFixtureSchema>;
 
-export const DEFAULT_REPLAY_DIR = path.resolve(process.cwd(), "../fixtures/replay");
+export const DEFAULT_REPLAY_DIR =
+  process.env.REPLAY_FIXTURES_DIR ?? path.resolve(process.cwd(), "../fixtures/replay");
 
 /** Load and validate a replay fixture by name (e.g. "honest-mm"). */
 export async function loadReplayFixture(

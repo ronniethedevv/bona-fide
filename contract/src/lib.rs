@@ -49,7 +49,9 @@ pub struct Agent {
     pub measurements: FullMeasurementsHex,
     pub ppid: Ppid,
     pub valid_until_ms: u64,
-    pub enc_pubkey: [u8; 32],
+    /// The enclave's X25519 public key, published by the agent after it
+    /// registers (via `set_enc_pubkey`). `None` until then.
+    pub enc_pubkey: Option<[u8; 32]>,
 }
 
 /// Per-market-maker rollup powering the directory and profile screens.
@@ -132,14 +134,16 @@ impl Contract {
     }
 
     /// Register (or re-register) the calling agent. Must be called by the agent
-    /// itself. `enc_pubkey` is the hex-encoded 32-byte X25519 public key the
-    /// enclave published; it is stored so the browser can seal keys to it.
+    /// itself. Signature matches the Shade Agent template so `@neardefi/
+    /// shade-agent-js`'s `register()` works unchanged; the agent publishes its
+    /// encryption key separately via [`set_enc_pubkey`]. A re-registration keeps
+    /// any previously published `enc_pubkey`.
     #[payable]
-    pub fn register_agent(&mut self, attestation: DstackAttestation, enc_pubkey: String) -> bool {
+    pub fn register_agent(&mut self, attestation: DstackAttestation) -> bool {
         let predecessor = env::predecessor_account_id();
-        let already_registered = self.agents.get(&predecessor).is_some();
+        let existing_pubkey = self.agents.get(&predecessor).and_then(|a| a.enc_pubkey);
 
-        if !already_registered {
+        if existing_pubkey.is_none() && self.agents.get(&predecessor).is_none() {
             let storage_cost = env::storage_byte_cost()
                 .checked_mul(STORAGE_BYTES_TO_REGISTER)
                 .unwrap();
@@ -151,8 +155,6 @@ impl Contract {
                 )
             );
         }
-
-        let enc_pubkey = decode_enc_pubkey(&enc_pubkey);
 
         // Verify the attestation and get the measurements and PPID for the agent.
         let (measurements, ppid, advisory_ids) = self.verify_attestation(attestation);
@@ -178,11 +180,25 @@ impl Contract {
                 measurements,
                 ppid,
                 valid_until_ms,
-                enc_pubkey,
+                enc_pubkey: existing_pubkey,
             },
         );
 
         true
+    }
+
+    /// Publish (or rotate) the calling agent's X25519 encryption public key, hex
+    /// of 32 bytes. Only a currently-valid registered agent may call. The browser
+    /// seals the MM's exchange key to this key for intake.
+    pub fn set_enc_pubkey(&mut self, enc_pubkey: String) {
+        self.assert_registered_valid_agent();
+        let decoded = decode_enc_pubkey(&enc_pubkey);
+        let account_id = env::predecessor_account_id();
+        let agent = self
+            .agents
+            .get_mut(&account_id)
+            .expect("Agent not registered");
+        agent.enc_pubkey = Some(decoded);
     }
 }
 
