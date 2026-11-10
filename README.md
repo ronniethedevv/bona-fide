@@ -62,6 +62,10 @@ Bona Fide fixes the trust problem without the exposure:
 - **agent/** — TypeScript Shade Agent: enclave keypair, sealed-box key intake, a **GET-only** exchange client, the read-only permission check, the deterministic scorer, pre-sign guards, and verdict submission.
 - **web/** — Vite + React: directory, profiles, mandate timelines, create/co-sign, connect-key.
 
+The exact scoring rules — every definition, boundary and rounding decision, how
+they're verified, and how they relate to exchange market-maker programmes — are
+specified in **[docs/SCORING.md](./docs/SCORING.md)**.
+
 ### Scoped permissioning, taken to its safest form
 
 The emerging playbook for autonomous agents in finance is: isolate root keys, sign inside a TEE, whitelist what the agent can touch, and put a deterministic guard between the agent's output and any signature. Bona Fide applies all four — and removes the hardest part by giving the agent **no spend authority at all**:

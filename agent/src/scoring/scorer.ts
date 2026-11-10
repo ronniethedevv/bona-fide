@@ -85,7 +85,10 @@ export function scoreEpoch(terms: ScoringTerms, epoch: EpochData): EpochScore {
     const twoSided = mmBid !== null && mmAsk !== null && mid.gt(0);
     let spreadBps = SPREAD_SENTINEL_BPS;
     if (twoSided) {
-      spreadBps = mmAsk.minus(mmBid).div(mid).times(BPS).floor().toNumber();
+      // Clamped at 0: a self-crossed quote (ask < bid) cannot rest on a real
+      // book, and a negative spread would otherwise break the pre-sign range
+      // guard. Treated as zero spread — i.e. at least as tight as touching.
+      spreadBps = Math.max(0, mmAsk.minus(mmBid).div(mid).times(BPS).floor().toNumber());
       finiteSpreads.push(spreadBps);
     }
 
