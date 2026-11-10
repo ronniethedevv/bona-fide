@@ -1,0 +1,22 @@
+# Bona Fide agent, for Phala Cloud (TEE) deployment via the Shade Agent CLI.
+# The CLI builds the image from ./Dockerfile and rewrites `image` to the pushed
+# digest; the dstack socket mount gives the enclave its attestation + key.
+services:
+  bona-fide-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKER_TAG}
+    container_name: bona-fide-agent
+    platform: linux/amd64
+    environment:
+      AGENT_CONTRACT_ID: ${AGENT_CONTRACT_ID}
+      SPONSOR_ACCOUNT_ID: ${SPONSOR_ACCOUNT_ID}
+      SPONSOR_PRIVATE_KEY: ${SPONSOR_PRIVATE_KEY}
+      NEAR_NETWORK: ${NEAR_NETWORK:-testnet}
+      DATA_SOURCE: ${DATA_SOURCE:-replay}
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+    restart: always

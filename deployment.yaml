@@ -1,0 +1,84 @@
+# Shade Agent CLI deployment config for Bona Fide.
+# Schema follows NearDeFi/shade-agent-template @ 816b75b, adapted to this repo's
+# layout (contract in ./contract, agent built from ./Dockerfile). Run
+# `shade plan` first to validate against your installed CLI version.
+
+# environment: local | TEE   (start with local to test, switch to TEE for Phala)
+environment: local
+
+# network: testnet | mainnet
+network: testnet
+
+docker_compose_path: ./docker-compose.yaml
+
+agent_contract:
+  # A unique, unused NEAR account id for the contract, e.g. bona-fide-123.testnet
+  contract_id:
+
+  deploy_custom:
+    enabled: true
+    funding_amount: 8
+    delete_key: false
+
+    deploy_from_source:
+      enabled: true
+      source_path: ./contract
+      reproducible_build: false
+    deploy_from_wasm:
+      enabled: false
+      wasm_path: ./contract/target/near/bona_fide_contract.wasm
+    use_global_by_hash:
+      enabled: false
+      global_hash:
+
+    init:
+      enabled: true
+      method_name: new
+      # <REQUIRES_TEE> → true/false by environment; <7_DAYS> → ms; <MASTER_ACCOUNT_ID> → CLI master account.
+      # NOTE: Bona Fide's `new` takes no mpc_contract_id (no Chain Signatures in v1).
+      args: |
+        {
+          "requires_tee": <REQUIRES_TEE>,
+          "attestation_expiration_time_ms": <7_DAYS>,
+          "owner_id": <MASTER_ACCOUNT_ID>
+        }
+
+approve_measurements:
+  enabled: true
+  method_name: approve_measurements
+  args: |
+    {
+      "measurements": <MEASUREMENTS>
+    }
+
+approve_ppids:
+  enabled: true
+  method_name: approve_ppids
+  args: |
+    {
+      "ppids": <PPIDS>
+    }
+
+build_docker_image:
+  enabled: true
+  # e.g. your-dockerhub-user/bona-fide-agent
+  tag:
+  cache: true
+  dockerfile_path: ./Dockerfile
+  reproducible_build: false
+
+deploy_to_phala:
+  enabled: true
+  app_name: bona-fide
+  env_file_path: ./.env
+  dstack_version: 0.5.8
+  instance_type: tdx.small
+  public_logs: true
+  public_sysinfo: true
+
+whitelist_agent_for_local:
+  method_name: whitelist_agent_for_local
+  args: |
+    {
+      "account_id": <AGENT_ACCOUNT_ID>
+    }

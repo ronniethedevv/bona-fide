@@ -1,11 +1,8 @@
 /**
- * Deterministic scoring — Phase 0 placeholder.
- *
- * The real scorer (P3.1) is a set of pure functions: plain data in, plain data
- * out, no I/O, no network, no keys, no AI. All arithmetic uses integers or
- * fixed-point decimal strings (decimal.js) — never floats (see architecture.md,
- * invariant I4). Nothing here decides a verdict yet.
+ * Deterministic scoring (P3.1). Pure functions only — plain data in, plain data
+ * out, fixed-point decimal strings, no floats, no I/O, no AI (invariant I4).
  */
+export { scoreEpoch, SPREAD_SENTINEL_BPS } from "./scorer.js";
+export type { EpochScore, ScoreStatus, ScoringTerms } from "./types.js";
 
-/** Marker for the scoring module version. Pure and deterministic by construction. */
-export const SCORING_VERSION = "0.0.0-phase0" as const;
+export const SCORING_VERSION = "1.0.0" as const;
