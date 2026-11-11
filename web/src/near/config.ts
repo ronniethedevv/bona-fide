@@ -12,8 +12,11 @@ export const AGENT_ID: string = import.meta.env.VITE_AGENT_ID ?? "";
 /** Base URL of the hosted agent's key-intake endpoint. */
 export const AGENT_URL: string = import.meta.env.VITE_AGENT_URL ?? "";
 
+// Default to fastnear's RPC (same endpoints the agent uses); the legacy
+// *.rpc.near.org hosts are deprecated and unreliable. Override with VITE_RPC_URL.
 export const RPC_URL =
-  NETWORK === "mainnet" ? "https://rpc.mainnet.near.org" : "https://rpc.testnet.near.org";
+  (import.meta.env.VITE_RPC_URL as string | undefined) ??
+  (NETWORK === "mainnet" ? "https://free.rpc.fastnear.com" : "https://test.rpc.fastnear.com");
 
 export const WALLET_FALLBACK_URL =
   NETWORK === "mainnet" ? "https://app.mynearwallet.com" : "https://testnet.mynearwallet.com";
