@@ -40,6 +40,11 @@ export function MandatePage() {
           <dt>Market maker</dt>
           <dd className="mono">
             <Link to={`/mm/${m.mm}`}>{m.mm}</Link>
+            {m.account_verified && (
+              <span className="verified" title="The attested agent confirmed this MM controls the committed exchange account. The account id is never revealed.">
+                {" "}✓ verified account
+              </span>
+            )}
           </dd>
           <dt>Project</dt>
           <dd className="mono">{m.project}</dd>
