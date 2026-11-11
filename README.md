@@ -105,7 +105,7 @@ Stated plainly, because it matters:
 |---|---|
 | Contract, mandates, co-signing, verdicts, missed-epoch recording | **Real, live on testnet** — [`bona-fide-rt2.testnet`](https://testnet.nearblocks.io/address/bona-fide-rt2.testnet), recomputable via `npm run evidence` |
 | Verdict submission gated to a registered agent | **Real** — the seeded verdicts were accepted only after registration + whitelist; unregistered callers are refused |
-| Deterministic scorer, jitter, balance reconciliation, guards | **Real code** — 80 agent tests + 14 contract tests in CI, property-based, mutation-checked, cross-checked against an independent implementation |
+| Deterministic scorer, jitter, balance reconciliation, guards | **Real code** — 88 agent tests + 18 contract tests in CI, property-based, mutation-checked, cross-checked against an independent implementation |
 | Market data behind the seeded verdicts | **Simulated** — committed replay fixtures, labelled with an amber **SIMULATED DATA** badge in the app; scoring of them is re-executable by anyone (`npm run demo:replay`) |
 | Read-only key check | **Real logic**; demonstrated against canned Binance responses (labelled), since the live check needs a real exchange key |
 | TEE attestation | **Local mode** — this deployment runs `requires_tee: false` with the mock local attestation. The real-attestation path (Phala dstack, `environment: TEE`) is the same committed pipeline, one config flag away; its status is tracked in [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) |
@@ -194,9 +194,10 @@ than aspirational.
 ## Roadmap
 
 - **Identity binding** — NEAR identity ↔ exchange account, privacy-preserving
-  (salted enclave-held fingerprints; Sybil-resistant). Not a slide: built and
-  tested on [PR #7](https://github.com/ronniethedevv/bona-fide/pull/7), staged
-  for after v1.
+  (salted enclave-held fingerprints; Sybil-resistant). Not a slide: built,
+  tested, and merged ([PR #18](https://github.com/ronniethedevv/bona-fide/pull/18),
+  [`docs/identity-binding.md`](./docs/identity-binding.md)); activates with the
+  next contract deployment — the live v1 contract predates it.
 - NEAR AI Cloud explainer for failed epochs (a private note from the metrics).
 - Paid detailed lookups (HTTP 402).
 - Chain Signatures mirror of summaries to other chains.
@@ -217,8 +218,8 @@ than aspirational.
 
 ```bash
 bash scripts/dev-setup.sh              # Rust wasm target + Node deps
-cd contract && cargo test              # 14 tests
-cd agent && npm ci && npm test         # 80 tests
+cd contract && cargo test              # 18 tests
+cd agent && npm ci && npm test         # 88 tests
 cd web && npm ci && npm run build
 ```
 

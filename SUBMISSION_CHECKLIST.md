@@ -15,7 +15,7 @@ free trial credit.
 - [x] Demo seeded on-chain: mandate `0` honest → **Pass, Pass**; mandate `1` dumping → **Fail**.
 - [x] Scoring hardening merged: TEE-keyed sampling jitter, balance-leak reconciliation ([#8](https://github.com/ronniethedevv/bona-fide/pull/8)).
 - [x] Deploy/bootstrap reliability fixes merged ([#14](https://github.com/ronniethedevv/bona-fide/pull/14)).
-- [x] CI green on `main`: 14 contract tests, 80 agent tests, clippy `-D warnings`, web build, no-context guard.
+- [x] CI green on `main`: 18 contract tests, 88 agent tests, clippy `-D warnings`, web build, no-context guard.
 - [x] Docs set: README (machine-readable "do X → see Y" judge path, per the rules) · ARCHITECTURE · THREAT-MODEL · SCORING · DEPLOY · evidence/.
 - [x] LICENSE file committed (Apache-2.0) — required by Q-014.
 - [x] Live evidence bundle committed: [`evidence/live/`](./evidence/live/) —
