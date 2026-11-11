@@ -17,7 +17,7 @@ agent_contract:
 
   deploy_custom:
     enabled: true
-    funding_amount: 12
+    funding_amount: 10
     delete_key: false
 
     deploy_from_source:
