@@ -15,22 +15,53 @@ account + API key, and a NEAR testnet account (the CLI can create one).
 
 ### WSL keyring note
 
-`shade auth` stores credentials in the OS Secret Service. On WSL that daemon is
-often locked/broken; if you hit `Secret Service: ... prompt was dismissed` or
-`no result found`, run shade inside an isolated, auto-unlocked keyring:
+`shade auth` stores credentials in the OS Secret Service (the Rust `keyring`
+crate). On WSL that daemon is frequently locked or has no default collection, so
+you will see one of:
+
+- `Secret Service: unlock prompt was dismissed`
+- `Secret Service: no result found`  ← means there is **no default collection**
+
+The key detail: `gnome-keyring-daemon --unlock` only *unlocks an existing*
+keyring — it never **creates** one. The flag that creates the login keyring (and
+aliases it as the default collection) is **`--login`**.
+
+**Option A — restart WSL and let the GUI create it (simplest).**
+From Windows PowerShell/CMD, not inside WSL:
+
+```
+wsl --shutdown
+```
+
+Reopen the Ubuntu terminal, then:
+
+```bash
+rm -rf ~/.local/share/keyrings
+shade auth set all testnet create-new
+```
+
+WSLg's prompter should offer to **create** a keyring — give it an empty password
+(or one you will remember) and `shade` proceeds.
+
+**Option B — headless, using `--login`.**
 
 ```bash
 sudo apt-get update && sudo apt-get install -y gnome-keyring dbus-x11
 pkill -9 -f gnome-keyring-daemon 2>/dev/null; sleep 1
-rm -f ~/.local/share/keyrings/*.keyring ~/.local/share/keyrings/default
+rm -rf ~/.local/share/keyrings
 export XDG_RUNTIME_DIR="$(mktemp -d)"
 dbus-run-session -- bash -lc '
-  eval "$(printf "" | gnome-keyring-daemon --unlock --components=secrets 2>/dev/null)"
+  eval "$(printf "\n" | gnome-keyring-daemon --login --components=secrets,pkcs11,ssh 2>/dev/null)"
+  eval "$(gnome-keyring-daemon --start --components=secrets,pkcs11,ssh 2>/dev/null)"
   shade auth set all testnet create-new'
 ```
 
-Run **all** later `shade` commands the same way (the credential lives in that
-keyring). The `shade-env` helper in the chat notes wraps this.
+The isolated `XDG_RUNTIME_DIR` stops the new daemon discovering (and deferring
+to) the broken WSLg one — the cause of `discover_other_daemon: 1`.
+
+Run **all** later `shade` commands in a session set up the same way (Option A:
+the normal terminal after the restart; Option B: the same wrapper), because the
+credential lives in that keyring.
 
 ## 1. Credentials
 
