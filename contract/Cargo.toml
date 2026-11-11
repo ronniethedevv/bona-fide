@@ -5,6 +5,7 @@ edition = "2024"
 description = "Bona Fide — mandate registry and append-only verdict record for market-maker accountability on NEAR"
 license = "Apache-2.0"
 repository = "https://github.com/ronniethedevv/bona-fide"
+rust-version = "1.86"
 
 # Reproducible build image, matching the Shade Agent template (NearDeFi/shade-agent-template @ 816b75b).
 [package.metadata.near.reproducible_build]
