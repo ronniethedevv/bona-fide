@@ -15,8 +15,8 @@ maker that dumped loaned tokens) carries an on-chain **Fail** — submitted by a
 accepted by a contract that takes verdicts from no one else, recorded
 append-only. Every claim in this paragraph regenerates from chain state with
 one command, `npm run evidence`, and the captured, block-stamped responses are
-committed in [`evidence/`](./evidence/). The hosted web app link lands here
-with the final submission.
+committed in [`evidence/`](./evidence/). The hosted web app is live at
+**[bona-fide-mm.vercel.app](https://bona-fide-mm.vercel.app)**.
 
 ---
 
@@ -112,7 +112,8 @@ Stated plainly, because it matters:
 
 ## How to judge this fastest
 
-**1. See the record (no wallet, nothing to install).** Open the app, click a
+**1. See the record (no wallet, nothing to install).** Open
+[the app](https://bona-fide-mm.vercel.app), click a
 market maker on the **Directory**, open a mandate, and read the epoch timeline
 — green **Pass**, red **Fail** (with reasons like `LOAN_CAP`), grey **Outage**,
 hatched **Missed**.
