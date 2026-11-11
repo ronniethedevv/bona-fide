@@ -1,0 +1,46 @@
+{
+  "method": "list_mandates",
+  "args": {},
+  "block_height": 277238991,
+  "block_hash": "9RZGC68Syzv8HptttQcF74Tf3AauiphVYF95mfrg7Snc",
+  "result": [
+    {
+      "id": "0",
+      "mm": "experiment-still.testnet",
+      "project": "experiment-still.testnet",
+      "exchange": "binance",
+      "pair": "TOKEN_USDT",
+      "account_label": "mm-honest",
+      "max_spread_bps": 100,
+      "depth_band_bps": 200,
+      "min_depth_per_side_quote": "10000000000",
+      "min_uptime_bps": 9000,
+      "loan_cap_per_epoch_base": "1000000",
+      "epoch_secs": 120,
+      "sample_secs": 30,
+      "start_ts": "1794394750",
+      "end_ts": "1794395950",
+      "status": "Active",
+      "terms_hash": "a5e47563309b3e8e842dd03e6b5681e264aeccc1fb8f3d574171b9240c44231a"
+    },
+    {
+      "id": "1",
+      "mm": "experiment-still.testnet",
+      "project": "experiment-still.testnet",
+      "exchange": "binance",
+      "pair": "TOKEN_USDT",
+      "account_label": "mm-dumping",
+      "max_spread_bps": 100,
+      "depth_band_bps": 200,
+      "min_depth_per_side_quote": "10000000000",
+      "min_uptime_bps": 9000,
+      "loan_cap_per_epoch_base": "1000000",
+      "epoch_secs": 120,
+      "sample_secs": 30,
+      "start_ts": "1794394750",
+      "end_ts": "1794395950",
+      "status": "Active",
+      "terms_hash": "29b35ec5e7e70a09a26a2cacddc24947666bf9c7a039757eccdd56df50e3359f"
+    }
+  ]
+}
