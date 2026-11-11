@@ -113,39 +113,84 @@ function requireEnv(name: string): string {
   return v;
 }
 
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** True for errors worth retrying: RPC timeouts, resets, DNS blips, gateway errors. */
+function isTransientRpcError(e: unknown): boolean {
+  const msg = String((e as { message?: unknown })?.message ?? e);
+  return /fetch failed|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|socket hang up|network|timed? ?out|50[234]/i.test(
+    msg,
+  );
+}
+
+/** Retry an RPC-backed call through transient network failures with a fixed backoff. */
+async function withRpcRetry<T>(label: string, fn: () => Promise<T>, attempts = 40, delayMs = 5_000): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isTransientRpcError(e) || attempt >= attempts) throw e;
+      // eslint-disable-next-line no-console
+      console.log(`${label}: transient RPC error (attempt ${attempt}/${attempts}), retrying in ${delayMs / 1000}s`);
+      await sleep(delayMs);
+    }
+  }
+}
+
 /** Register the attested agent and publish its enclave public key. */
 export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: EnclaveKeypair }> {
-  const agent = await ShadeClient.create({
-    networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
-    agentContractId: requireEnv("AGENT_CONTRACT_ID"),
-    sponsor: {
-      accountId: requireEnv("SPONSOR_ACCOUNT_ID"),
-      privateKey: requireEnv("SPONSOR_PRIVATE_KEY"),
-    },
-  });
+  // In local (non-TEE) mode the library derives a RANDOM agent account on every
+  // start unless a derivationPath is set — which would orphan the previous
+  // whitelist on each restart. Pin it so the account is stable across restarts.
+  // In TEE mode the enclave-derived key is used and this path is ignored.
+  const derivationPath =
+    process.env.AGENT_DERIVATION_PATH ?? process.env.ENCLAVE_SEED_HEX ?? "bona-fide-local-agent";
+
+  const agent = await withRpcRetry("ShadeClient.create", () =>
+    ShadeClient.create({
+      networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
+      agentContractId: requireEnv("AGENT_CONTRACT_ID"),
+      derivationPath,
+      sponsor: {
+        accountId: requireEnv("SPONSOR_ACCOUNT_ID"),
+        privateKey: requireEnv("SPONSOR_PRIVATE_KEY"),
+      },
+    }),
+  );
 
   // eslint-disable-next-line no-console
   console.log("agent account:", agent.accountId());
-  if ((await agent.balance()) < 0.2) await agent.fund(0.3);
+  if ((await withRpcRetry("balance", () => agent.balance())) < 0.2) {
+    await withRpcRetry("fund", () => agent.fund(0.3));
+  }
 
   for (;;) {
-    const whitelisted = await agent.isWhitelisted();
-    if (whitelisted === null || whitelisted) {
-      if (await agent.register()) break;
+    try {
+      const whitelisted = await agent.isWhitelisted();
+      if (whitelisted === null || whitelisted) {
+        if (await agent.register()) break;
+      }
+    } catch (e) {
+      if (!isTransientRpcError(e)) throw e;
+      // eslint-disable-next-line no-console
+      console.log("whitelist/register: transient RPC error, will retry");
     }
     // eslint-disable-next-line no-console
     console.log("waiting to be whitelisted:", agent.accountId());
-    await new Promise((r) => setTimeout(r, 10_000));
+    await sleep(10_000);
   }
 
   const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
   enclaveKeypair = keypair;
   agentClient = agent;
-  await agent.call({
-    methodName: "set_enc_pubkey",
-    args: { enc_pubkey: await publicKeyHex(keypair) },
-    gas: SUBMIT_GAS,
-  });
+  const encPubkey = await publicKeyHex(keypair);
+  await withRpcRetry("set_enc_pubkey", () =>
+    agent.call({
+      methodName: "set_enc_pubkey",
+      args: { enc_pubkey: encPubkey },
+      gas: SUBMIT_GAS,
+    }),
+  );
 
   return { agent, keypair };
 }
