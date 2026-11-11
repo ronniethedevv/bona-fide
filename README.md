@@ -6,6 +6,8 @@ Market makers prove they kept their deals — inside a sealed enclave, so no one
 
 **Chain:** NEAR testnet · **Contract:** [`bona-fide-rt2.testnet`](https://testnet.nearblocks.io/address/bona-fide-rt2.testnet) · **Stack:** Shade Agents (NEAR × Phala dstack TEE) · **License:** Apache-2.0
 
+**Built at** [NEAR HACKATHON](https://nearhackathon.com), entirely within the event window · **Tracks:** Privacy & Private AI (confidential computation in a TEE — the book never leaves the enclave) · AI Security & Defense (an agent given money to watch, and no keys to move it)
+
 **It's not a mock.** The contract is deployed and seeded: mandate `0` (an honest
 market maker) carries two on-chain **Pass** verdicts, and mandate `1` (a market
 maker that dumped loaned tokens) carries an on-chain **Fail** — submitted by a
