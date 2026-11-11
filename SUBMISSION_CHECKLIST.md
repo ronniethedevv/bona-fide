@@ -25,11 +25,9 @@ free trial credit.
 
 ## Remaining — in order
 
-- [ ] **Host the web app free** (GitHub Pages or Cloudflare Pages free plan —
-      the build is pure static and reads NEAR from the browser). Q-012: a
-      hosted demo is a plus and judges must be able to open *something*; keep
-      it up through 2026-11-18, ideally 2026-11-25. Then replace the "hosted
-      web app link lands here" line in the README with the URL.
+- [x] **Web app hosted** (Vercel free tier, pure static, reads NEAR from the
+      browser): <https://bona-fide-mm.vercel.app> — linked from the README.
+      Q-012: keep it up through 2026-11-18, ideally 2026-11-25.
 - [ ] **TEE burst on Phala** (fits comfortably in the $5 trial credit). The
       attestation lands **on-chain permanently**, so the paid CVM only needs to
       run for the deploy + seeding — hours, not weeks:
