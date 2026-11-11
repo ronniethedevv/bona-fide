@@ -1,4 +1,3 @@
-import "./polyfills.js";
 import "@near-wallet-selector/modal-ui/styles.css";
 import "./styles.css";
 import { StrictMode } from "react";
