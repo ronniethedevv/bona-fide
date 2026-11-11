@@ -22,6 +22,7 @@ export interface ReferenceScore {
   /** Plain base units (NOT scaled). */
   netSellsBase: number;
   withdrawalsBase: number;
+  unexplainedOutflowBase: number;
   failReasons: string[];
 }
 
@@ -87,16 +88,28 @@ export function referenceScore(terms: ScoringTerms, epoch: EpochData): Reference
   let withdrawals = 0;
   for (const w of epoch.withdrawals) withdrawals += Number(w.baseQty);
 
+  // Balance reconciliation: unexplained base-token outflow beyond fee tolerance.
+  let unexplained = 0;
+  if (epoch.startBaseBalance !== undefined && epoch.endBaseBalance !== undefined) {
+    const open = Number(epoch.startBaseBalance);
+    const close = Number(epoch.endBaseBalance);
+    const shortfall = open + buys - sells - withdrawals - close;
+    const tolerance = Math.max((Math.abs(open) * 10) / 10_000, 0);
+    if (shortfall > tolerance) unexplained = shortfall;
+  }
+
   const uptimeOk = uptimeBps >= terms.minUptimeBps;
-  const loanOk = net + withdrawals <= loanCap;
+  const loanOk = net + withdrawals + unexplained <= loanCap;
+  const balanceOk = unexplained <= 0;
 
   const failReasons: string[] = [];
   if (!uptimeOk) failReasons.push("UPTIME");
   if (!loanOk) failReasons.push("LOAN_CAP");
+  if (!balanceOk) failReasons.push("BALANCE_LEAK");
 
   let status: ReferenceScore["status"];
   if (coverageBps < 9_000 && epoch.serverErrors === true) status = "Outage";
-  else if (uptimeOk && loanOk) status = "Pass";
+  else if (uptimeOk && loanOk && balanceOk) status = "Pass";
   else status = "Fail";
 
   return {
@@ -108,6 +121,7 @@ export function referenceScore(terms: ScoringTerms, epoch: EpochData): Reference
     minAskDepthQuote: minAsk ?? 0,
     netSellsBase: net,
     withdrawalsBase: withdrawals,
+    unexplainedOutflowBase: unexplained,
     failReasons: status === "Outage" ? [] : failReasons,
   };
 }

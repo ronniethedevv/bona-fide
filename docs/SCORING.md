@@ -26,8 +26,9 @@ verdict, on any machine. No AI model is involved at any point.
 **Per sample** (every `sample_secs`): the public best bid/ask, and the committed
 account's open orders on the pair (price and size per level).
 
-**Per epoch:** the account's own trades (side, base quantity) and base-token
-withdrawals.
+**Per epoch:** the account's own trades (side, base quantity), base-token
+withdrawals, and the base-token balance at epoch open and close (used for
+reconciliation; optional — if unavailable, that check is skipped).
 
 ## 2. Arithmetic conventions
 
@@ -39,6 +40,20 @@ withdrawals.
 - `coverage_bps` and `uptime_bps` are clamped to `[0, 10000]`.
 
 ## 3. Per-sample metrics
+
+### Sampling schedule (anti-gaming)
+
+Epoch start and `sample_secs` are public on-chain, so a fixed cadence is
+predictable: a market maker could quote only around the moments it knows will be
+observed ("flicker quoting") and pass uptime while providing little real
+liquidity in between.
+
+Each sample is therefore taken at a pseudo-random offset **inside its own
+window**: offset `i` = `HMAC(jitter_key, mandate ‖ epoch ‖ i) mod (sample_secs ×
+1000)`, where `jitter_key` is derived from the enclave's TEE key. That key never
+leaves the enclave, so the schedule is **unpredictable to the MM** yet **exactly
+reproducible for audit**. Exactly one sample is taken per window, so `expected`,
+coverage and uptime arithmetic are unchanged.
 
 Let `mid = (public_best_bid + public_best_ask) / 2` — the standard midpoint.
 
@@ -103,6 +118,29 @@ loan_ok     = loan_used ≤ loan_cap_per_epoch_base
 `net_sells` is reported clamped at zero because the on-chain field is unsigned;
 a net *buyer* reports `0`, which is correct for a cap on disposal.
 
+**Balance reconciliation.** Trades and withdrawal records do not capture every
+way base tokens can leave the committed account: an internal transfer (spot →
+funding, a move to a sub-account) is performed on the exchange's website, where
+the API key's permissions are irrelevant, and need not appear in withdrawal
+history. So the balance is checked against the activity that should explain it:
+
+```
+expected_close = open_balance + buys − sells − withdrawals
+shortfall      = expected_close − close_balance
+tolerance      = open_balance × 10bps
+unexplained    = shortfall > tolerance ? shortfall : 0
+loan_used      = max(net_sells, 0) + withdrawals + unexplained
+```
+
+Any `unexplained > 0` adds the `BALANCE_LEAK` reason **and** counts toward the
+loan cap — an unexplained outflow is disposal until proven otherwise. The 10 bps
+tolerance absorbs trading fees charged in the base asset and dust rounding, so
+ordinary activity never trips it. A balance that *grew* is never penalised. If
+either balance is unavailable the check is skipped rather than guessed at.
+
+`unexplained` is not a separate on-chain field; it is visible through
+`BALANCE_LEAK` and its effect on the loan check.
+
 ## 5. Status
 
 Evaluated in this order — **the first match wins**:
@@ -112,8 +150,10 @@ Evaluated in this order — **the first match wins**:
 2. **`Outage`** — `coverage_bps < 9000` **and** the gaps were exchange/server
    errors. No fail reasons are attached: the agent, not the MM, failed to
    observe.
-3. **`Pass`** — `uptime_bps ≥ min_uptime_bps` **and** `loan_ok`.
-4. **`Fail`** — otherwise, listing every failing reason: `UPTIME`, `LOAN_CAP`.
+3. **`Pass`** — `uptime_bps ≥ min_uptime_bps`, **and** `loan_ok`, **and** no
+   unexplained outflow.
+4. **`Fail`** — otherwise, listing every failing reason: `UPTIME`, `LOAN_CAP`,
+   `BALANCE_LEAK`.
 
 A missing verdict is not a status the scorer produces: if no verdict is
 submitted before `epoch_end + grace`, anyone may record `Missed` on-chain.
@@ -163,3 +203,45 @@ practice. Useful references to check the method against:
 None of these change the integrity of a verdict — they change how rich it is.
 Each can be added without altering the trust model, because the mandate pins the
 exact rule set via `terms_hash`.
+
+## 8. What a verdict proves — and what it does not
+
+Being precise about this matters more than sounding strong.
+
+**Replay verdicts are publicly re-executable.** The fixtures ship in the repo, so
+anyone can run `npm run demo:replay` or the test suite and recompute the exact
+same verdict. Determinism here is directly checkable by a stranger.
+
+**Live verdicts are deterministic but not publicly re-executable.** They are
+computed over samples only the enclave ever saw — necessarily, because
+publishing the raw order-book and trade data would leak the market maker's book,
+which is the entire thing this product protects. So the public does not verify a
+live verdict by recomputing it; it verifies that **approved, attested code**
+computed it, and that the code is the code published here. That is a different
+guarantee, and we state it as such: *attestation, not re-execution.*
+
+*(Possible later: the enclave retains an encrypted sample log, disclosable to a
+named arbiter with the MM's consent, so a disputed epoch can be re-executed
+without making the book public.)*
+
+**The exchange is a trusted oracle.** We attest our computation over what the
+exchange reported. We do not — and cannot — prove the exchange reported
+truthfully. A compromised or dishonest venue feeding false order-book or trade
+data would produce an honestly-computed verdict over dishonest inputs.
+
+**One key shows one account.** The record proves what happened in the committed
+account. Balance reconciliation now catches value leaving that account by
+unreported routes, but it cannot prove the MM holds no other accounts.
+
+## 9. Known adversarial findings (v2 backlog)
+
+Named deliberately: an unexamined scoring system is worth less than one whose
+gaps are published.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | **Outage is a shelter.** `Outage` requires low coverage caused by server errors and is not a `Fail`, so an MM able to induce errors (e.g. exhausting account rate limits with its own parallel keys) could convert a bad epoch into a grey one. | Mitigated by visibility — outage counts are public on the MM profile, so a pattern is obvious. **v2:** distinguish rate-limit errors from 5xx, and let a project terminate after N outages. |
+| 2 | **Band-edge stuffing.** Spread is measured at the best quote with *any* size, and depth counts anywhere inside the band. Token size at the touch plus bulk at the band edge can pass both tests while being thin where it matters. | **v2:** a minimum size at top-of-book, and/or multi-band depth (±0.5% / ±1% / ±2%). Parameter additions; same trust model. |
+| 3 | **The algorithm is not pinned per mandate.** `terms_hash` pins the parameters and the approved codehash pins the algorithm, but the mandate does not record *which* codehash was approved when it was co-signed, so a mid-mandate scorer update scores later epochs under rules nobody signed. Detectable (every verdict records its codehash) but not prevented. | **v2:** snapshot the approved measurement into the mandate at co-sign and check it in `submit_verdict`. |
+| 4 | **Non-atomic sampling.** Mid-price and the MM's orders are fetched milliseconds apart, so a fast-moving market adds noise to a sample. | Accepted — absorbed by the uptime threshold; not worth the complexity to fix. |
+| 5 | **The cap is per-epoch by design.** Total permitted disposal is `cap × epochs`, i.e. a drip limit. | Accepted — this is usually what token-loan agreements want. The mandate UI should show the arithmetic so projects see the cumulative figure. |

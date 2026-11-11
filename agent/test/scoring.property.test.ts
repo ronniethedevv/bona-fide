@@ -27,12 +27,44 @@ const sample = fc.record({
 const qty = fc.integer({ min: 0, max: 100_000 }).map((n) => (n / 100).toFixed(2));
 const trade = fc.record({ side: fc.constantFrom("buy" as const, "sell" as const), baseQty: qty });
 
-const epochArb: fc.Arbitrary<EpochData> = fc.record({
+const baseEpochArb = fc.record({
   samples: fc.array(sample, { maxLength: 6 }),
   trades: fc.array(trade, { maxLength: 5 }),
   withdrawals: fc.array(fc.record({ baseQty: qty }), { maxLength: 3 }),
   serverErrors: fc.boolean(),
 });
+
+/**
+ * Half the generated epochs carry opening/closing balances, so balance
+ * reconciliation is exercised: `delta` > 0 is an unexplained outflow (a leak),
+ * <= 0 is a clean or over-funded account.
+ */
+const epochArb: fc.Arbitrary<EpochData> = baseEpochArb.chain((e) =>
+  fc.oneof(
+    fc.constant(e as EpochData),
+    fc
+      .tuple(
+        fc.integer({ min: 0, max: 1_000_000 }).map((n) => n / 100),
+        fc.integer({ min: -5_000, max: 5_000 }).map((n) => n / 100),
+      )
+      .map(([open, delta]) => {
+        let buys = 0;
+        let sells = 0;
+        for (const t of e.trades) {
+          if (t.side === "sell") sells += Number(t.baseQty);
+          else buys += Number(t.baseQty);
+        }
+        let w = 0;
+        for (const x of e.withdrawals) w += Number(x.baseQty);
+        const expectedClose = open + buys - sells - w;
+        return {
+          ...e,
+          startBaseBalance: open.toFixed(2),
+          endBaseBalance: (expectedClose - delta).toFixed(2),
+        } as EpochData;
+      }),
+  ),
+);
 
 const termsArb: fc.Arbitrary<ScoringTerms> = fc.record({
   maxSpreadBps: fc.integer({ min: 0, max: 5_000 }),
@@ -157,6 +189,12 @@ describe("cross-check against an independent implementation", () => {
         close(mine.minAskDepthQuote, ref.minAskDepthQuote);
         close(mine.netSellsBase, ref.netSellsBase);
         close(mine.withdrawalsBase, ref.withdrawalsBase);
+        close(mine.unexplainedOutflowBase, ref.unexplainedOutflowBase);
+
+        // Both must agree on whether the account leaked.
+        const mineLeaked = mine.failReasons.includes("BALANCE_LEAK");
+        const refLeaked = ref.failReasons.includes("BALANCE_LEAK");
+        expect(mineLeaked).toBe(refLeaked);
 
         // Status must agree whenever the uptime figures agree.
         if (mine.uptimeBps === ref.uptimeBps) expect(mine.status).toBe(ref.status);

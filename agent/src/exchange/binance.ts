@@ -11,6 +11,12 @@
 import { createHmac } from "node:crypto";
 import type { ApiRestrictions } from "./permissions.js";
 
+/** The fields of GET /api/v3/account we read. */
+export interface BinanceAccount {
+  uid: number;
+  balances?: Array<{ asset: string; free: string; locked: string }>;
+}
+
 export interface BinanceCredential {
   readonly apiKey: string;
   readonly apiSecret: string;
@@ -70,6 +76,11 @@ export class BinanceReadOnlyClient {
   /** GET /sapi/v1/account/apiRestrictions — the key's own permissions. */
   getApiRestrictions(cred: BinanceCredential): Promise<ApiRestrictions> {
     return this.#signedGet("/sapi/v1/account/apiRestrictions", {}, cred);
+  }
+
+  /** GET /api/v3/account — account info: stable numeric `uid` and balances. */
+  getAccount(cred: BinanceCredential): Promise<BinanceAccount> {
+    return this.#signedGet("/api/v3/account", {}, cred);
   }
 
   /** GET /api/v3/openOrders — the account's open orders for a symbol. */

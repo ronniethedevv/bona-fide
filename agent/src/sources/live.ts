@@ -8,6 +8,7 @@
  * `fetchTrades` / `fetchWithdrawals` at epoch close to assemble an `EpochData`;
  * `ReplaySource` is its scripted counterpart.
  */
+import { Decimal } from "decimal.js";
 import { z } from "zod";
 import {
   BinanceReadOnlyClient,
@@ -88,6 +89,17 @@ export class LiveMarket {
       .parse(raw)
       .filter((w) => w.coin === this.base)
       .map((w) => ({ baseQty: w.amount }));
+  }
+
+  /**
+   * Free + locked balance of the base token, for epoch reconciliation. Read
+   * from the same read-only account endpoint; no extra permission needed.
+   */
+  async fetchBaseBalance(): Promise<string> {
+    const account = await this.#guardAuth(() => this.client.getAccount(this.cred));
+    const row = (account.balances ?? []).find((b) => b.asset === this.base);
+    if (!row) return "0";
+    return new Decimal(row.free).plus(new Decimal(row.locked)).toFixed();
   }
 
   async #guardAuth<T>(fn: () => Promise<T>): Promise<T> {
