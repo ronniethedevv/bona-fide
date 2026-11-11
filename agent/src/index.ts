@@ -151,6 +151,13 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
       networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
       agentContractId: requireEnv("AGENT_CONTRACT_ID"),
       derivationPath,
+      // numKeys must be >= 2 in deterministic (derivationPath) mode: with
+      // numKeys=1 the library derives zero additional keys and its
+      // `[].every(...) === true` makes the "all random" flag disagree with the
+      // deterministically-derived first key, throwing in register(). Two keys
+      // derives one real additional key so the flags agree (and lets the agent
+      // rotate keys across concurrent submissions).
+      numKeys: Number(process.env.AGENT_NUM_KEYS ?? "2"),
       sponsor: {
         accountId: requireEnv("SPONSOR_ACCOUNT_ID"),
         privateKey: requireEnv("SPONSOR_PRIVATE_KEY"),
