@@ -10,6 +10,8 @@
  * Built on the Shade Agent template via `@neardefi/shade-agent-js`. No keys or
  * secrets are ever logged (I3).
  */
+import dotenv from "dotenv";
+if (process.env.NODE_ENV !== "production") dotenv.config();
 import { serve } from "@hono/node-server";
 import { ShadeClient } from "@neardefi/shade-agent-js";
 import { Hono } from "hono";
@@ -21,11 +23,16 @@ import { KeyIntakeError, openSealedKey } from "./keys/intake.js";
 import { deriveEnclaveKeypair, publicKeyHex, type EnclaveKeypair } from "./keys/keypair.js";
 import { getEnclaveSeed } from "./keys/seed.js";
 import { KeyStore } from "./keys/store.js";
+import { scoringTerms, type MandateView } from "./contract.js";
+import { runReplay } from "./runner.js";
+import { ReplaySource, loadReplayFixture } from "./sources/replay.js";
+import { shadeVerdictSink, submitVerdicts } from "./submit.js";
 
 const SUBMIT_GAS = BigInt("300000000000000");
 
 // Enclave-only state (never serialized/logged).
 let enclaveKeypair: EnclaveKeypair | null = null;
+let agentClient: ShadeClient | null = null;
 const keyStore = new KeyStore();
 const exchange = new BinanceReadOnlyClient();
 
@@ -35,6 +42,38 @@ const app = new Hono();
 app.use("/api/*", cors());
 app.get("/", (c) => c.json({ service: "bona-fide-agent", status: "ok" }));
 app.get("/healthz", (c) => c.json({ status: "ok", keys: keyStore.size }));
+
+const RunReplayBody = z.object({ mandate_id: z.number().int().nonnegative(), fixture: z.string().min(1) });
+
+/**
+ * Demo seeding (SEED_ENABLED=true): score a replay fixture against an existing
+ * Active mandate and submit the verdicts on-chain. Only the registered agent can
+ * submit (the contract enforces it), and it only reads bundled fixtures, so this
+ * is the real runner path wired to a chosen fixture. Off unless explicitly enabled.
+ */
+app.post("/api/run-replay", async (c) => {
+  if (process.env.SEED_ENABLED !== "true") return c.json({ error: "seeding disabled" }, 403);
+  if (!agentClient) return c.json({ error: "agent not ready" }, 503);
+  let body: z.infer<typeof RunReplayBody>;
+  try {
+    body = RunReplayBody.parse(await c.req.json());
+  } catch {
+    return c.json({ error: "invalid body" }, 400);
+  }
+  const mandate = (await agentClient.view<Record<string, unknown>>({
+    methodName: "get_mandate",
+    args: { id: String(body.mandate_id) },
+  })) as unknown as MandateView | null;
+  if (!mandate) return c.json({ error: "mandate not found" }, 404);
+
+  const source = new ReplaySource(await loadReplayFixture(body.fixture));
+  const verdicts = await runReplay(source, scoringTerms(mandate), {
+    termsHash: mandate.terms_hash,
+    codehash: "replay-local",
+  });
+  await submitVerdicts(shadeVerdictSink(agentClient), body.mandate_id, verdicts);
+  return c.json({ submitted: verdicts.length, statuses: verdicts.map((v) => v.status) });
+});
 
 /** Receive a browser-sealed key, verify it is read-only, and hold or reject it. */
 app.post("/api/intake", async (c) => {
@@ -101,6 +140,7 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
 
   const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
   enclaveKeypair = keypair;
+  agentClient = agent;
   await agent.call({
     methodName: "set_enc_pubkey",
     args: { enc_pubkey: await publicKeyHex(keypair) },

@@ -11,7 +11,9 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "demo:replay": "tsx scripts/demo-replay.ts"
+    "demo:replay": "tsx scripts/demo-replay.ts",
+    "seed:env": "tsx scripts/make-env.ts",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.0.1",
@@ -29,6 +31,8 @@
     "fast-check": "4.10.2",
     "typescript": "5.9.3",
     "tsx": "4.21.0",
-    "vitest": "2.1.9"
+    "vitest": "2.1.9",
+    "@napi-rs/keyring": "2.1.2",
+    "near-api-js": "7.4.0"
   }
 }
