@@ -167,8 +167,13 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
 
   // eslint-disable-next-line no-console
   console.log("agent account:", agent.accountId());
-  if ((await withRpcRetry("balance", () => agent.balance())) < 0.2) {
-    await withRpcRetry("fund", () => agent.fund(0.3));
+  // First-time register also adds an access key and attaches a deposit, costing
+  // ~0.31 NEAR, so keep the floor (and the top-up) comfortably above that or the
+  // very first register() fails with NotEnoughBalance.
+  const MIN_AGENT_BALANCE = Number(process.env.AGENT_MIN_BALANCE ?? "0.5");
+  const AGENT_TOPUP = Number(process.env.AGENT_TOPUP ?? "0.5");
+  if ((await withRpcRetry("balance", () => agent.balance())) < MIN_AGENT_BALANCE) {
+    await withRpcRetry("fund", () => agent.fund(AGENT_TOPUP));
   }
 
   for (;;) {
