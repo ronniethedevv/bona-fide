@@ -1,115 +1,234 @@
 # Bona Fide
 
-Let market makers prove they kept their deals — inside a sealed enclave, so no one sees their book.
+Market makers prove they kept their deals — inside a sealed enclave, so no one sees their book.
 
-**Most agentic-finance security is about safely letting an agent _spend_. Bona Fide's agent never spends — it only _reads_ and _signs attestations_, so the whole fund-movement attack surface is gone.** It's scoped permissioning taken to its limit: a read-only exchange key, held in a TEE, with a deterministic guard layer between the agent and every signature. The agent can't move money, so there's nothing to contain.
+> The agent can't move money, so there's nothing to contain.
 
----
+**Chain:** NEAR testnet · **Contract:** [`bona-fide-rt2.testnet`](https://testnet.nearblocks.io/address/bona-fide-rt2.testnet) · **Stack:** Shade Agents (NEAR × Phala dstack TEE) · **License:** Apache-2.0
 
-## How to test
+**Built at** [NEAR HACKATHON](https://nearhackathon.com), entirely within the event window · **Tracks:** Privacy & Private AI (confidential computation in a TEE — the book never leaves the enclave) · AI Security & Defense (an agent given money to watch, and no keys to move it)
 
-> Live app: **`<LIVE_APP_URL>`** · Contract: **`<CONTRACT_ID>`** (NEAR testnet)
-> _(filled in once deployed — see [DEPLOY.md](./DEPLOY.md))_
-
-You do **not** need a market-making account or an exchange key to see this working.
-
-### 1. See existing verdicts (no wallet needed)
-1. Open the live app.
-2. On the **Directory**, click a market maker (e.g. the seeded honest MM or dumping MM).
-3. Open a mandate and click a cell in the **epoch timeline** — green **Pass**, red **Fail** (with reasons like `LOAN_CAP`), grey **Outage**, hatched **Missed**. Replay data wears an amber **SIMULATED DATA** badge.
-
-### 2. Try the key check (no key needed)
-Open **Try the key check**. Pick "Trade-enabled key" and run it — the enclave's read-only permission check rejects it on sight (`TRADE_ENABLED`). The read-only key is accepted. All on canned exchange responses, labelled simulated.
-
-### 3. Run a fresh replay scoring (no wallet, no deploy)
-```bash
-git clone <this repo> && cd bona-fide
-npm run demo:replay
-```
-This scores the honest and dumping fixtures with the real scorer and prints the verdicts (honest → Pass, dumping → Fail/`LOAN_CAP`), plus the key-check results. Fully offline.
-
-### 4. Get a NEAR testnet account (to co-sign or create a mandate)
-- Create one at a testnet wallet (e.g. MyNearWallet testnet) or with `near create-account <name>.testnet --useFaucet` (near-cli-rs).
-- Connect it in the app (top right). As the **market maker** you can create a mandate (`/new`) — the terms hash is shown before you sign. As the **named, allowlisted project** you can co-sign to activate it.
-
-### 5. (Optional) Connect a real read-only key
-On a mandate, open **Connect key**. Create a **read-only** key on your exchange, paste it, and it is encrypted in your browser to the enclave's key before it leaves the page. A key that can trade or withdraw is rejected.
+**It's not a mock.** The contract is deployed and seeded: mandate `0` (an honest
+market maker) carries two on-chain **Pass** verdicts, and mandate `1` (a market
+maker that dumped loaned tokens) carries an on-chain **Fail** — submitted by a
+[registered agent](https://testnet.nearblocks.io/address/e3056536582c2c77e1ad9cb976cf5b4c95fe2dedd5ee95efec3e7237c7f2f8b4),
+accepted by a contract that takes verdicts from no one else, recorded
+append-only. Every claim in this paragraph regenerates from chain state with
+one command, `npm run evidence`, and the captured, block-stamped responses are
+committed in [`evidence/`](./evidence/). The hosted web app link lands here
+with the final submission.
 
 ---
 
-## What it is
+## The problem
 
-Token projects hire market makers to keep their markets liquid, often lending them tokens. Two things go wrong: MMs miss agreed KPIs (spread, depth, uptime) and projects can't prove it, or MMs dump the loaned tokens. The incumbent grading tool only scores MMs that hand their book to a third party — small MMs are invisible or exposed.
+Token projects hire market makers to keep their markets liquid, and often lend
+them tokens to do it. Two things go wrong, constantly: the market maker misses
+the agreed KPIs — spread, depth, uptime — and the project cannot prove it; or
+the market maker quietly sells the loaned tokens. The incumbent answer is a
+grading service that requires the market maker to hand its order book to a
+third party. Large firms tolerate that; small ones stay invisible or exposed.
 
-Bona Fide fixes the trust problem without the exposure:
+In market making, the book *is* the strategy. Asking someone to publish it so
+they can be trusted is asking them to stop being a market maker.
 
-1. **Engagement Mandate** — the MM and project co-sign terms on NEAR (token, exchange, account, KPI bounds, loan cap, dates).
-2. **Sealed inspection** — the MM gives a **read-only** exchange key to a **Shade Agent** running in a TEE. The key is encrypted in the browser to a key that only exists inside the enclave.
-3. **Deterministic scoring** — each epoch the agent reads the committed account read-only, scores it with plain code against the mandate, and submits a **signed verdict** to the contract.
-4. **Attested, append-only record** — the contract only accepts verdicts from agents running **approved, attested code**. Verdicts are permanent; a missing one becomes a recorded miss.
+## What Bona Fide does — the life of one mandate
+
+1. **Co-sign the terms on NEAR.** The market maker proposes an *Engagement
+   Mandate* — token pair, exchange, KPI bounds, loan cap, dates. The terms are
+   hashed, both parties see the hash, and the allowlisted project co-signs.
+   From here the rules cannot drift: every verdict binds to that hash.
+2. **Hand over a key that cannot spend.** The MM creates a **read-only**
+   exchange key and pastes it into the app, where it is encrypted *in the
+   browser* to a public key that exists only inside a TEE. Nobody — including
+   us — sees it in transit.
+3. **The enclave rejects dangerous keys on sight.** Before the key is ever
+   used, the agent queries the exchange for the key's real permissions. Trade
+   or withdrawal rights → rejected (`TRADE_ENABLED`), dropped, never stored.
+4. **Sampling the MM can't predict.** Each epoch, the agent reads the account
+   at pseudo-random moments derived from the enclave's key — reproducible for
+   audit, unknowable in advance — so quoting only when watched doesn't work.
+5. **Plain code decides.** A deterministic scorer computes spread, depth,
+   uptime, net sells, withdrawals, and a balance reconciliation that catches
+   tokens leaving by routes the trade log never shows (`BALANCE_LEAK`). Eight
+   pre-sign guards then stand between the score and the signature.
+6. **The record can't be quietly edited.** The contract accepts verdicts only
+   from registered agents running approved, attested code; verdicts are
+   append-only; and if an epoch's verdict never arrives, *anyone* may record
+   the miss. Silence is visible.
 
 > **AI may propose; deterministic code decides; the log can't be quietly edited.**
-> Scoring is plain code, verdicts are signed by attested code, and the on-chain record is append-only.
+
+## Why "read-only" is the whole security story
+
+Most agentic-finance security is about safely letting an agent *spend*. Bona
+Fide's agent never spends — it only reads and signs attestations — so the
+entire fund-movement attack surface is gone, not guarded:
+
+- **Isolation** — no root wallet enters the agent; its only credential is a
+  read-only exchange key sealed to the enclave.
+- **Whitelisting at the protocol level** — the exchange client exposes **only
+  GET**; there is no order or withdrawal code to trick into running.
+- **Deterministic guards** — nothing is signed unless the mandate matches, the
+  epoch has closed, the metrics are in range, the data source is recorded, and
+  the agent's code is still approved.
+- **Attestation** — the contract refuses verdicts from code whose measurements
+  the owner hasn't approved, so the guards can't be bypassed by swapping code.
+
+Even a fully compromised enclave is a *privacy* incident, never a theft: the
+key it holds cannot move funds. The full attack-by-attack analysis — defended,
+mitigated, and honestly accepted — is in
+[`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md).
 
 ## How it works
 
+```mermaid
+graph LR
+  MM["MM browser\nseals read-only key\nto the enclave"] -->|sealed key| Agent
+  subgraph TEE["Shade Agent (TEE)"]
+    Agent["permission check\njittered sampling\ndeterministic scorer\n8 pre-sign guards"]
+  end
+  Agent -->|read-only GET| Ex["Exchange"]
+  Agent -->|signed verdict| C["NEAR contract\nattestation-gated\nappend-only"]
+  P["Project + MM wallets"] -->|propose · co-sign| C
+  W["Web app"] -->|view calls| C
 ```
-[MM browser] --(seal key to enclave pubkey)--> [Shade Agent in TEE] --read-only GET--> [exchange]
-[Shade Agent] --(submit_verdict, as attested agent)--> [bona-fide contract on NEAR] <--(views)-- [web app]
+
+Component detail, sequence diagrams, and a file-by-file map:
+[`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
+## What is real in this deployment, and what is simulated
+
+Stated plainly, because it matters:
+
+| Thing | Status |
+|---|---|
+| Contract, mandates, co-signing, verdicts, missed-epoch recording | **Real, live on testnet** — [`bona-fide-rt2.testnet`](https://testnet.nearblocks.io/address/bona-fide-rt2.testnet), recomputable via `npm run evidence` |
+| Verdict submission gated to a registered agent | **Real** — the seeded verdicts were accepted only after registration + whitelist; unregistered callers are refused |
+| Deterministic scorer, jitter, balance reconciliation, guards | **Real code** — 80 agent tests + 14 contract tests in CI, property-based, mutation-checked, cross-checked against an independent implementation |
+| Market data behind the seeded verdicts | **Simulated** — committed replay fixtures, labelled with an amber **SIMULATED DATA** badge in the app; scoring of them is re-executable by anyone (`npm run demo:replay`) |
+| Read-only key check | **Real logic**; demonstrated against canned Binance responses (labelled), since the live check needs a real exchange key |
+| TEE attestation | **Local mode** — this deployment runs `requires_tee: false` with the mock local attestation. The real-attestation path (Phala dstack, `environment: TEE`) is the same committed pipeline, one config flag away; its status is tracked in [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) |
+
+## How to judge this fastest
+
+**1. See the record (no wallet, nothing to install).** Open the app, click a
+market maker on the **Directory**, open a mandate, and read the epoch timeline
+— green **Pass**, red **Fail** (with reasons like `LOAN_CAP`), grey **Outage**,
+hatched **Missed**.
+
+**2. Try to break it.** Open **Try the key check** and feed it the
+trade-enabled key: the enclave's permission check rejects it on sight
+(`TRADE_ENABLED`). The read-only key is accepted.
+
+**3. Recompute a verdict yourself, offline.**
+```bash
+git clone https://github.com/ronniethedevv/bona-fide && cd bona-fide
+npm run demo:replay
 ```
+The real scorer runs on the committed fixtures and prints the same verdicts the
+chain holds: honest → **Pass**, dumping → **Fail** (`LOAN_CAP`). No wallet, no
+exchange account, no network.
 
-- **contract/** — Rust (near-sdk), extends the Shade Agent template: mandates, the project allowlist, agent registration + published enclave key, append-only verdicts, missed-epoch recording.
-- **agent/** — TypeScript Shade Agent: enclave keypair, sealed-box key intake, a **GET-only** exchange client, the read-only permission check, the deterministic scorer, pre-sign guards, and verdict submission.
-- **web/** — Vite + React: directory, profiles, mandate timelines, create/co-sign, connect-key.
+**4. Recompute the evidence from chain state.**
+```bash
+npm --prefix agent install && npm run evidence
+```
+Every file in `evidence/live/` is rewritten from the live contract, each
+stamped with the block it was read at. Diff it against what is committed.
 
-The exact scoring rules — every definition, boundary and rounding decision, how
-they're verified, and how they relate to exchange market-maker programmes — are
-specified in **[docs/SCORING.md](./docs/SCORING.md)**.
+**5. Run the whole stack.** Deploy your own copy for faucet NEAR —
+[`DEPLOY.md`](./DEPLOY.md) is the complete path, WSL keyring quirks included.
 
-### Scoped permissioning, taken to its safest form
+## Components
 
-The emerging playbook for autonomous agents in finance is: isolate root keys, sign inside a TEE, whitelist what the agent can touch, and put a deterministic guard between the agent's output and any signature. Bona Fide applies all four — and removes the hardest part by giving the agent **no spend authority at all**:
+| Part | What it is |
+|---|---|
+| [`contract/`](./contract/) | Rust (near-sdk), extends the Shade Agent template: mandates, project allowlist, attestation-gated agent registry, append-only verdicts, `record_missed`. |
+| [`agent/`](./agent/) | TypeScript Shade Agent: enclave keypair, sealed-box key intake, GET-only exchange client, read-only permission check, jittered sampling, deterministic scorer, pre-sign guards, signed submission. |
+| [`web/`](./web/) | Vite + React, no backend: directory, MM profiles, mandate timelines, create/co-sign, in-browser key sealing. |
+| [`fixtures/replay/`](./fixtures/replay/) | The honest / dumping / outage / key-revoked scenarios the demo scores. |
 
-- **Isolation:** root wallets never enter the agent. The only credential it holds is a read-only exchange key, sealed to a key that exists only inside the enclave.
-- **Whitelisting / Guard Mode:** the exchange client exposes **only GET** requests (I1), and a key with any trade/transfer/withdraw right is rejected before first use (I2).
-- **Deterministic output guards:** a set of pure pre-sign checks runs between the scorer and the signature — nothing is signed unless the mandate matches, the epoch has closed, metrics are in range, the data source is recorded, and the agent's code is still approved.
-- **Attested code:** the contract accepts a verdict only from an agent whose measurements are approved, so the guards can't be bypassed by swapping the code.
+**NEAR technology used:** Shade Agents (attested off-chain compute whose output
+the contract verifies), a near-sdk contract as the registry and append-only
+record, and wallet-selector for in-browser signing.
 
-## NEAR components used
+## Scoring, and how we know it is right
 
-- **Shade Agents** (NEAR × Phala dstack TEE) — attested off-chain code whose output the contract verifies.
-- **NEAR smart contract** (near-sdk) — the mandate registry and the append-only verdict record.
-- **NEAR wallet selector** — project/MM signing in the browser.
+The exact rules — every definition, boundary, and rounding decision — are
+specified in [`docs/SCORING.md`](./docs/SCORING.md), which also publishes what
+a verdict proves *and what it does not*, plus the known adversarial findings as
+a v2 backlog. Determinism is asserted as a property, not assumed: fast-check
+property tests over adversarial inputs, an independently written reference
+implementation compared case-by-case, and mutation checks that prove the suite
+fails when the scorer is deliberately broken. The metrics mirror how real
+market-maker obligations are written (two-sided quotes within X bps, minimum
+size per side, present Y% of the time).
 
 ## Trust limits (read these)
 
-- **Hardware trust:** if the TEE is broken, the book could leak. Keys are **read-only**, so funds can't move regardless.
-- **Attestation, not re-execution.** Replay verdicts are publicly re-computable (`npm run demo:replay`). *Live* verdicts are deterministic but computed over samples only the enclave saw — publishing the raw data would leak the book, which is the point of the product. You verify a live verdict by checking that **approved, attested code** produced it, not by recomputing it yourself.
-- **The exchange is a trusted oracle.** We attest our computation over what the exchange reported; we cannot prove the exchange reported truthfully.
-- **One key shows one account.** The record proves what happened in the committed account. Balance reconciliation catches value leaving it by unreported routes (internal transfers), but it cannot prove the MM has no other accounts.
+- **Hardware trust:** if the TEE is broken, the book could leak. Keys are
+  **read-only**, so funds can't move regardless.
+- **Attestation, not re-execution.** Replay verdicts are publicly re-computable
+  (`npm run demo:replay`). *Live* verdicts are deterministic but computed over
+  samples only the enclave saw — publishing the raw data would leak the book,
+  which is the point of the product. You verify a live verdict by checking that
+  **approved, attested code** produced it, not by recomputing it yourself.
+- **The exchange is a trusted oracle.** We attest our computation over what the
+  exchange reported; we cannot prove the exchange reported truthfully.
+- **One key shows one account.** The record proves what happened in the
+  committed account. Balance reconciliation catches value leaving it by
+  unreported routes (internal transfers), but it cannot prove the MM has no
+  other accounts.
 - **The project allowlist is owner-controlled** in this phase.
-
-The full scoring rules, the anti-gaming measures, and a published list of the
-remaining known gaps are in **[docs/SCORING.md](./docs/SCORING.md)**.
 
 ## Exchange
 
-v1 uses **Binance** spot (read-only). Binance exposes an API key's own permissions via a read-only `GET /sapi/v1/account/apiRestrictions`, so the enclave can reject a trade/withdraw-enabled key before first use — the core "reject a dangerous key on sight" guarantee.
+v1 uses **Binance** spot, read-only. Binance exposes a key's own permissions
+via `GET /sapi/v1/account/apiRestrictions` — itself a read-only call — so the
+enclave can reject a trade- or withdraw-enabled key before first use. That
+endpoint is what makes "reject a dangerous key on sight" enforceable rather
+than aspirational.
 
 ## Roadmap
 
-- NEAR AI Cloud explainer for failed epochs (private note from metrics).
+- **Identity binding** — NEAR identity ↔ exchange account, privacy-preserving
+  (salted enclave-held fingerprints; Sybil-resistant). Not a slide: built and
+  tested on [PR #7](https://github.com/ronniethedevv/bona-fide/pull/7), staged
+  for after v1.
+- NEAR AI Cloud explainer for failed epochs (a private note from the metrics).
 - Paid detailed lookups (HTTP 402).
 - Chain Signatures mirror of summaries to other chains.
 - A Midnight / zero-knowledge variant.
+
+## Documentation
+
+| Document | What's in it |
+|---|---|
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | The three parts, the epoch sequence, trust boundaries, file-by-file map. |
+| [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) | 22 attacks: defence, enforcement point, honest status for each. |
+| [`docs/SCORING.md`](./docs/SCORING.md) | The scoring specification, assurance method, industry references, published gaps. |
+| [`evidence/`](./evidence/) | Deployment record + block-stamped chain state behind every claim. |
+| [`DEPLOY.md`](./DEPLOY.md) | Reproduce the deployment end to end on testnet. |
+| [`docs/demo-script.md`](./docs/demo-script.md) · [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) | The demo video script and the submission checklist. |
 
 ## Develop
 
 ```bash
 bash scripts/dev-setup.sh              # Rust wasm target + Node deps
 cd contract && cargo test              # 14 tests
-cd agent && npm ci && npm test         # 57 tests
+cd agent && npm ci && npm test         # 80 tests
 cd web && npm ci && npm run build
 ```
 
-Built on the [Shade Agent template](https://github.com/NearDeFi/shade-agent-template) (Apache-2.0). License: Apache-2.0.
+CI runs rustfmt, clippy (`-D warnings`), both test suites, the web build, and a
+guard that no AI context file is ever tracked — on every push and PR.
+
+## Originality and license
+
+Built for this hackathon on the
+[Shade Agent template](https://github.com/NearDeFi/shade-agent-template)
+(Apache-2.0), which provides the agent↔contract attestation plumbing; the
+mandate registry, verdict record, scorer, guards, key intake, exchange layer,
+and web app were written for this project. License:
+[Apache-2.0](./LICENSE).

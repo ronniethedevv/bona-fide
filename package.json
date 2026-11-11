@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "demo:replay": "npm --prefix agent run demo:replay",
+    "evidence": "npm --prefix agent run evidence",
     "test:agent": "npm --prefix agent test",
     "test:contract": "cd contract && cargo test",
     "build:web": "npm --prefix web run build"
