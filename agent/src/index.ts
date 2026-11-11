@@ -113,39 +113,101 @@ function requireEnv(name: string): string {
   return v;
 }
 
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** True for errors worth retrying: RPC timeouts, resets, DNS blips, gateway errors. */
+function isTransientRpcError(e: unknown): boolean {
+  const msg = String((e as { message?: unknown })?.message ?? e);
+  return /fetch failed|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|socket hang up|network|timed? ?out|50[234]/i.test(
+    msg,
+  );
+}
+
+/** Retry an RPC-backed call through transient network failures with a fixed backoff. */
+async function withRpcRetry<T>(label: string, fn: () => Promise<T>, attempts = 40, delayMs = 5_000): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isTransientRpcError(e) || attempt >= attempts) throw e;
+      // eslint-disable-next-line no-console
+      console.log(`${label}: transient RPC error (attempt ${attempt}/${attempts}), retrying in ${delayMs / 1000}s`);
+      await sleep(delayMs);
+    }
+  }
+}
+
 /** Register the attested agent and publish its enclave public key. */
 export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: EnclaveKeypair }> {
-  const agent = await ShadeClient.create({
-    networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
-    agentContractId: requireEnv("AGENT_CONTRACT_ID"),
-    sponsor: {
-      accountId: requireEnv("SPONSOR_ACCOUNT_ID"),
-      privateKey: requireEnv("SPONSOR_PRIVATE_KEY"),
-    },
-  });
+  // In local (non-TEE) mode the library derives a RANDOM agent account on every
+  // start unless a derivationPath is set — which would orphan the previous
+  // whitelist on each restart. Pin it so the account is stable across restarts.
+  // In TEE mode the enclave-derived key is used and this path is ignored.
+  const derivationPath =
+    process.env.AGENT_DERIVATION_PATH ?? process.env.ENCLAVE_SEED_HEX ?? "bona-fide-local-agent";
+
+  const agent = await withRpcRetry("ShadeClient.create", () =>
+    ShadeClient.create({
+      networkId: (process.env.NEAR_NETWORK as "testnet" | "mainnet") ?? "testnet",
+      agentContractId: requireEnv("AGENT_CONTRACT_ID"),
+      derivationPath,
+      // numKeys must be >= 2 in deterministic (derivationPath) mode: with
+      // numKeys=1 the library derives zero additional keys and its
+      // `[].every(...) === true` makes the "all random" flag disagree with the
+      // deterministically-derived first key, throwing in register(). Two keys
+      // derives one real additional key so the flags agree (and lets the agent
+      // rotate keys across concurrent submissions).
+      numKeys: Number(process.env.AGENT_NUM_KEYS ?? "2"),
+      sponsor: {
+        accountId: requireEnv("SPONSOR_ACCOUNT_ID"),
+        privateKey: requireEnv("SPONSOR_PRIVATE_KEY"),
+      },
+    }),
+  );
 
   // eslint-disable-next-line no-console
   console.log("agent account:", agent.accountId());
-  if ((await agent.balance()) < 0.2) await agent.fund(0.3);
+  // First-time register also adds an access key and attaches a deposit, costing
+  // ~0.31 NEAR, so keep the floor (and the top-up) comfortably above that or the
+  // very first register() fails with NotEnoughBalance.
+  const MIN_AGENT_BALANCE = Number(process.env.AGENT_MIN_BALANCE ?? "0.5");
+  const AGENT_TOPUP = Number(process.env.AGENT_TOPUP ?? "0.5");
+  if ((await withRpcRetry("balance", () => agent.balance())) < MIN_AGENT_BALANCE) {
+    await withRpcRetry("fund", () => agent.fund(AGENT_TOPUP));
+  }
+
+  // The contract requires the register deposit to cover the agent record's
+  // storage (STORAGE_BYTES_TO_REGISTER = 600 bytes = 0.006 NEAR). The library's
+  // 0.005 default is too low, so attach 0.01 NEAR (matches the contract tests).
+  const registerDeposit = process.env.AGENT_REGISTER_DEPOSIT_YOCTO ?? "10000000000000000000000";
 
   for (;;) {
-    const whitelisted = await agent.isWhitelisted();
-    if (whitelisted === null || whitelisted) {
-      if (await agent.register()) break;
+    try {
+      const whitelisted = await agent.isWhitelisted();
+      if (whitelisted === null || whitelisted) {
+        if (await agent.register({ deposit: registerDeposit })) break;
+      }
+    } catch (e) {
+      if (!isTransientRpcError(e)) throw e;
+      // eslint-disable-next-line no-console
+      console.log("whitelist/register: transient RPC error, will retry");
     }
     // eslint-disable-next-line no-console
     console.log("waiting to be whitelisted:", agent.accountId());
-    await new Promise((r) => setTimeout(r, 10_000));
+    await sleep(10_000);
   }
 
   const keypair = await deriveEnclaveKeypair(await getEnclaveSeed());
   enclaveKeypair = keypair;
   agentClient = agent;
-  await agent.call({
-    methodName: "set_enc_pubkey",
-    args: { enc_pubkey: await publicKeyHex(keypair) },
-    gas: SUBMIT_GAS,
-  });
+  const encPubkey = await publicKeyHex(keypair);
+  await withRpcRetry("set_enc_pubkey", () =>
+    agent.call({
+      methodName: "set_enc_pubkey",
+      args: { enc_pubkey: encPubkey },
+      gas: SUBMIT_GAS,
+    }),
+  );
 
   return { agent, keypair };
 }
