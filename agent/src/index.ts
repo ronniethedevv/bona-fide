@@ -176,11 +176,16 @@ export async function bootstrap(): Promise<{ agent: ShadeClient; keypair: Enclav
     await withRpcRetry("fund", () => agent.fund(AGENT_TOPUP));
   }
 
+  // The contract requires the register deposit to cover the agent record's
+  // storage (STORAGE_BYTES_TO_REGISTER = 600 bytes = 0.006 NEAR). The library's
+  // 0.005 default is too low, so attach 0.01 NEAR (matches the contract tests).
+  const registerDeposit = process.env.AGENT_REGISTER_DEPOSIT_YOCTO ?? "10000000000000000000000";
+
   for (;;) {
     try {
       const whitelisted = await agent.isWhitelisted();
       if (whitelisted === null || whitelisted) {
-        if (await agent.register()) break;
+        if (await agent.register({ deposit: registerDeposit })) break;
       }
     } catch (e) {
       if (!isTransientRpcError(e)) throw e;
