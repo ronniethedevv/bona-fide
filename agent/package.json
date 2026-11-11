@@ -13,7 +13,8 @@
     "test": "vitest run",
     "demo:replay": "tsx scripts/demo-replay.ts",
     "seed:env": "tsx scripts/make-env.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "evidence": "tsx scripts/capture-evidence.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.0.1",
