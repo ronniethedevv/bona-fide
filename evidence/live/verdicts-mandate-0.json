@@ -1,0 +1,48 @@
+{
+  "method": "get_verdicts",
+  "args": {
+    "id": "0",
+    "from_epoch": 0,
+    "limit": 100
+  },
+  "block_height": 277238992,
+  "block_hash": "DQ4rQYWW1fbFnYErMi6mCReYpg6fHpbWHfjL9LKfSycs",
+  "result": [
+    {
+      "epoch": 0,
+      "verdict": {
+        "status": "Pass",
+        "uptime_bps": 10000,
+        "median_spread_bps": 39,
+        "min_bid_depth_quote": "19976000000",
+        "min_ask_depth_quote": "20056000000",
+        "net_sells_base": "50000",
+        "withdrawals_base": "0",
+        "coverage_bps": 10000,
+        "fail_reasons": [],
+        "terms_hash": "a5e47563309b3e8e842dd03e6b5681e264aeccc1fb8f3d574171b9240c44231a",
+        "codehash": "replay-local",
+        "data_source": "Replay",
+        "submitted_at": "1794394765766"
+      }
+    },
+    {
+      "epoch": 1,
+      "verdict": {
+        "status": "Pass",
+        "uptime_bps": 10000,
+        "median_spread_bps": 39,
+        "min_bid_depth_quote": "19996000000",
+        "min_ask_depth_quote": "20076000000",
+        "net_sells_base": "0",
+        "withdrawals_base": "0",
+        "coverage_bps": 10000,
+        "fail_reasons": [],
+        "terms_hash": "a5e47563309b3e8e842dd03e6b5681e264aeccc1fb8f3d574171b9240c44231a",
+        "codehash": "replay-local",
+        "data_source": "Replay",
+        "submitted_at": "1794394768433"
+      }
+    }
+  ]
+}
