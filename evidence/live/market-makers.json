@@ -1,0 +1,19 @@
+{
+  "method": "list_mms",
+  "args": {},
+  "block_height": 277238991,
+  "block_hash": "9RZGC68Syzv8HptttQcF74Tf3AauiphVYF95mfrg7Snc",
+  "result": [
+    {
+      "account_id": "experiment-still.testnet",
+      "summary": {
+        "engagements": 2,
+        "pass": 2,
+        "fail": 1,
+        "missed": 0,
+        "outage": 0,
+        "last_verdict_ms": "1794394771218"
+      }
+    }
+  ]
+}

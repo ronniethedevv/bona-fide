@@ -18,12 +18,13 @@ free trial credit.
 - [x] CI green on `main`: 14 contract tests, 80 agent tests, clippy `-D warnings`, web build, no-context guard.
 - [x] Docs set: README (machine-readable "do X → see Y" judge path, per the rules) · ARCHITECTURE · THREAT-MODEL · SCORING · DEPLOY · evidence/.
 - [x] LICENSE file committed (Apache-2.0) — required by Q-014.
+- [x] Live evidence bundle committed: [`evidence/live/`](./evidence/live/) —
+      block-stamped JSON-RPC responses for every public view method, captured
+      at blocks 277238990–277238992. Re-check with
+      `npm --prefix agent install && npm run evidence` and diff.
 
 ## Remaining — in order
 
-- [ ] **Generate the live evidence bundle** (one command, any machine):
-      `npm --prefix agent install && npm run evidence`, then commit
-      `evidence/live/`.
 - [ ] **Host the web app free** (GitHub Pages or Cloudflare Pages free plan —
       the build is pure static and reads NEAR from the browser). Q-012: a
       hosted demo is a plus and judges must be able to open *something*; keep

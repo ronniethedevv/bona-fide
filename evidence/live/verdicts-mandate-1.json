@@ -1,0 +1,32 @@
+{
+  "method": "get_verdicts",
+  "args": {
+    "id": "1",
+    "from_epoch": 0,
+    "limit": 100
+  },
+  "block_height": 277238991,
+  "block_hash": "9RZGC68Syzv8HptttQcF74Tf3AauiphVYF95mfrg7Snc",
+  "result": [
+    {
+      "epoch": 0,
+      "verdict": {
+        "status": "Fail",
+        "uptime_bps": 10000,
+        "median_spread_bps": 40,
+        "min_bid_depth_quote": "19820000000",
+        "min_ask_depth_quote": "19900000000",
+        "net_sells_base": "8400000",
+        "withdrawals_base": "2000000",
+        "coverage_bps": 10000,
+        "fail_reasons": [
+          "LOAN_CAP"
+        ],
+        "terms_hash": "29b35ec5e7e70a09a26a2cacddc24947666bf9c7a039757eccdd56df50e3359f",
+        "codehash": "replay-local",
+        "data_source": "Replay",
+        "submitted_at": "1794394771218"
+      }
+    }
+  ]
+}
