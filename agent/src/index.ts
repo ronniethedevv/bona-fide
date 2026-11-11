@@ -110,6 +110,9 @@ app.post("/api/intake", async (c) => {
   if (agentClient && fpKey) {
     try {
       const { uid } = await exchange.getAccount({ apiKey: payload.api_key, apiSecret: payload.api_secret });
+      // A missing uid must not fall through to String(undefined): every such
+      // account would share one fingerprint and falsely collide in de-dup.
+      if (typeof uid !== "number" || !Number.isFinite(uid)) throw new Error("account uid unavailable");
       const uidStr = String(uid);
       const mandate = (await agentClient.view<Record<string, unknown>>({
         methodName: "get_mandate",
