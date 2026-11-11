@@ -125,6 +125,7 @@ trade-enabled key: the enclave's permission check rejects it on sight
 **3. Recompute a verdict yourself, offline.**
 ```bash
 git clone https://github.com/ronniethedevv/bona-fide && cd bona-fide
+npm --prefix agent install
 npm run demo:replay
 ```
 The real scorer runs on the committed fixtures and prints the same verdicts the

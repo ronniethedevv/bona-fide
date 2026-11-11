@@ -9,27 +9,26 @@
  *   npm run evidence                # from agent/, or `npm run evidence` at the root
  *   CONTRACT_ID=... RPC_URL=... npm run evidence   # override the defaults
  *
- * Reads the contract id from CONTRACT_ID, else from ../deployment.yaml.
+ * Reads the contract id from CONTRACT_ID, else from ../deployment.yaml, else
+ * falls back to the live deployment the README documents.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const RPC = process.env.RPC_URL ?? "https://test.rpc.fastnear.com";
+const DEPLOYED_CONTRACT = "bona-fide-rt2.testnet";
 
 function contractIdFromDeployment(): string | undefined {
   try {
     const dep = readFileSync(path.resolve(process.cwd(), "../deployment.yaml"), "utf8");
-    return dep.match(/^\s*contract_id:\s*(\S+)/m)?.[1];
+    // Same-line value only: an empty `contract_id:` must not swallow the next line.
+    return dep.match(/^[^\S\n]*contract_id:[^\S\n]*(\S+)[^\S\n]*$/m)?.[1];
   } catch {
     return undefined;
   }
 }
 
-const contractId = process.env.CONTRACT_ID ?? contractIdFromDeployment();
-if (!contractId) {
-  console.error("No contract id: set CONTRACT_ID or fill agent_contract.contract_id in ../deployment.yaml");
-  process.exit(1);
-}
+const contractId = process.env.CONTRACT_ID ?? contractIdFromDeployment() ?? DEPLOYED_CONTRACT;
 
 interface ViewResult {
   method: string;

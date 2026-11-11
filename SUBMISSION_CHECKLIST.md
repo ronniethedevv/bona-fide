@@ -96,8 +96,9 @@ free trial credit.
 
 ```bash
 git clone https://github.com/ronniethedevv/bona-fide && cd bona-fide
+npm --prefix agent install
 npm run demo:replay                      # recompute the verdicts offline
-npm --prefix agent install && npm run evidence   # recompute the chain evidence
+npm run evidence                         # recompute the chain evidence
 ```
 
 Then open the hosted app → Directory → the Pass and Fail timelines, and
