@@ -73,8 +73,12 @@ impl Contract {
             terms.epoch_secs > 0 && terms.sample_secs > 0,
             "epoch/sample secs must be > 0"
         );
+        // `u32::is_multiple_of` is only stable from Rust 1.87; the Shade builder
+        // image uses 1.86, so keep the manual form.
+        #[allow(clippy::manual_is_multiple_of)]
+        let whole_multiple = terms.epoch_secs % terms.sample_secs == 0;
         require!(
-            terms.epoch_secs.is_multiple_of(terms.sample_secs),
+            whole_multiple,
             "epoch_secs must be a whole multiple of sample_secs"
         );
         require!(
