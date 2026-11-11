@@ -12,6 +12,14 @@ import type { EpochScore, ScoringTerms } from "./types.js";
 const SCALE = new Decimal(1_000_000); // 1e6 fixed-point
 const BPS = new Decimal(10_000);
 const OUTAGE_COVERAGE_BPS = 9_000; // coverage below 90% + server errors ⇒ Outage
+/**
+ * Tolerance for balance reconciliation, in basis points of the opening balance.
+ * Absorbs trading fees charged in the base asset and dust rounding, so ordinary
+ * activity never trips BALANCE_LEAK. 10 bps comfortably covers standard taker
+ * fees (~1–10 bps) without hiding a meaningful transfer out.
+ */
+const BALANCE_TOLERANCE_BPS = new Decimal(10);
+
 /** Spread when a side is missing (no two-sided quote) — the guard cap. */
 export const SPREAD_SENTINEL_BPS = 1_000_000;
 
@@ -53,6 +61,28 @@ function median(values: number[]): number {
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 1) return sorted[mid]!;
   return Math.floor((sorted[mid - 1]! + sorted[mid]!) / 2);
+}
+
+/**
+ * Base tokens that left the account without a matching trade or withdrawal.
+ * Returns 0 when either balance is absent (check disabled) or the shortfall is
+ * within the fee tolerance.
+ */
+function unexplainedOutflow(
+  epoch: EpochData,
+  buys: Decimal,
+  sells: Decimal,
+  withdrawals: Decimal,
+): Decimal {
+  if (epoch.startBaseBalance === undefined || epoch.endBaseBalance === undefined) {
+    return new Decimal(0);
+  }
+  const open = new Decimal(epoch.startBaseBalance);
+  const close = new Decimal(epoch.endBaseBalance);
+  const expectedClose = open.plus(buys).minus(sells).minus(withdrawals);
+  const shortfall = expectedClose.minus(close);
+  const tolerance = Decimal.max(open.abs().times(BALANCE_TOLERANCE_BPS).div(BPS), 0);
+  return shortfall.gt(tolerance) ? shortfall : new Decimal(0);
 }
 
 function clampBps(n: number): number {
@@ -107,31 +137,42 @@ export function scoreEpoch(terms: ScoringTerms, epoch: EpochData): EpochScore {
   const uptimeBps = clampBps(Math.floor((okCount * 10_000) / expected));
 
   // Trades: net sells of base = Σ sell − Σ buy; clamp at ≥ 0 for the unsigned field.
-  let netSells = new Decimal(0);
+  let sells = new Decimal(0);
+  let buys = new Decimal(0);
   for (const t of epoch.trades) {
     const q = new Decimal(t.baseQty);
-    netSells = t.side === "sell" ? netSells.plus(q) : netSells.minus(q);
+    if (t.side === "sell") sells = sells.plus(q);
+    else buys = buys.plus(q);
   }
-  const netSellsPos = Decimal.max(netSells, 0);
+  const netSellsPos = Decimal.max(sells.minus(buys), 0);
   let withdrawals = new Decimal(0);
   for (const w of epoch.withdrawals) withdrawals = withdrawals.plus(new Decimal(w.baseQty));
 
+  // Balance reconciliation: catch base tokens leaving the committed account by a
+  // route the API does not report as a withdrawal (internal transfer, sub-account
+  // move). Expected close = open + buys − sells − withdrawals; any shortfall
+  // beyond the fee tolerance is unexplained outflow and counts as disposal.
+  const unexplained = unexplainedOutflow(epoch, buys, sells, withdrawals);
+
   const netSellsScaled = netSellsPos.times(SCALE).floor();
   const withdrawalsScaled = withdrawals.times(SCALE).floor();
-  const loanUsedScaled = netSellsPos.plus(withdrawals).times(SCALE).floor();
+  const unexplainedScaled = unexplained.times(SCALE).floor();
+  const loanUsedScaled = netSellsPos.plus(withdrawals).plus(unexplained).times(SCALE).floor();
 
   const uptimeOk = uptimeBps >= terms.minUptimeBps;
   const loanOk = loanUsedScaled.lte(loanCapScaled);
+  const balanceOk = unexplained.lte(0);
 
   const failReasons: string[] = [];
   if (!uptimeOk) failReasons.push("UPTIME");
   if (!loanOk) failReasons.push("LOAN_CAP");
+  if (!balanceOk) failReasons.push("BALANCE_LEAK");
 
   // Status precedence (architecture.md): KEY_REVOKED (runner) → Outage → Pass → Fail.
   let status: EpochScore["status"];
   if (coverageBps < OUTAGE_COVERAGE_BPS && epoch.serverErrors === true) {
     status = "Outage";
-  } else if (uptimeOk && loanOk) {
+  } else if (uptimeOk && loanOk && balanceOk) {
     status = "Pass";
   } else {
     status = "Fail";
@@ -145,6 +186,7 @@ export function scoreEpoch(terms: ScoringTerms, epoch: EpochData): EpochScore {
     minAskDepthQuote: (minAskDepth ?? new Decimal(0)).toFixed(0),
     netSellsBase: netSellsScaled.toFixed(0),
     withdrawalsBase: withdrawalsScaled.toFixed(0),
+    unexplainedOutflowBase: unexplainedScaled.toFixed(0),
     coverageBps,
     failReasons: status === "Outage" ? [] : failReasons,
   };

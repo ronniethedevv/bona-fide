@@ -37,6 +37,14 @@ export const EpochDataSchema = z.object({
   authError: z.boolean().optional(),
   /** Some samples were lost to exchange/server errors (drives Outage vs Fail). */
   serverErrors: z.boolean().optional(),
+  /**
+   * Committed account's base-token balance at epoch open and close (decimal
+   * strings). When both are present the scorer reconciles them against trades
+   * and withdrawals to catch disposal routes the API cannot see directly
+   * (internal transfers, sub-account moves). Optional: absent disables the check.
+   */
+  startBaseBalance: z.string().optional(),
+  endBaseBalance: z.string().optional(),
 });
 export type EpochData = z.infer<typeof EpochDataSchema>;
 

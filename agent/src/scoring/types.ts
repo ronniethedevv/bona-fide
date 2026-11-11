@@ -30,6 +30,12 @@ export interface EpochScore {
   /** 1e6-scaled base units, clamped at ≥ 0 (the contract field is unsigned). */
   netSellsBase: string;
   withdrawalsBase: string;
+  /**
+   * Base tokens that left the account with no matching trade or withdrawal
+   * (balance reconciliation), 1e6-scaled. Not a separate on-chain field — it is
+   * counted toward the loan cap and surfaced via the BALANCE_LEAK fail reason.
+   */
+  unexplainedOutflowBase: string;
   coverageBps: number;
   /** Codes such as UPTIME, LOAN_CAP (KEY_REVOKED is set by the runner). */
   failReasons: string[];

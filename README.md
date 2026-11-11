@@ -84,8 +84,13 @@ The emerging playbook for autonomous agents in finance is: isolate root keys, si
 ## Trust limits (read these)
 
 - **Hardware trust:** if the TEE is broken, the book could leak. Keys are **read-only**, so funds can't move regardless.
-- **One key shows one account.** The record proves what happened in the committed account, not that the MM has no others.
+- **Attestation, not re-execution.** Replay verdicts are publicly re-computable (`npm run demo:replay`). *Live* verdicts are deterministic but computed over samples only the enclave saw — publishing the raw data would leak the book, which is the point of the product. You verify a live verdict by checking that **approved, attested code** produced it, not by recomputing it yourself.
+- **The exchange is a trusted oracle.** We attest our computation over what the exchange reported; we cannot prove the exchange reported truthfully.
+- **One key shows one account.** The record proves what happened in the committed account. Balance reconciliation catches value leaving it by unreported routes (internal transfers), but it cannot prove the MM has no other accounts.
 - **The project allowlist is owner-controlled** in this phase.
+
+The full scoring rules, the anti-gaming measures, and a published list of the
+remaining known gaps are in **[docs/SCORING.md](./docs/SCORING.md)**.
 
 ## Exchange
 

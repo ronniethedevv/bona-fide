@@ -5,6 +5,7 @@
  */
 import { keyRevokedVerdict, toVerdictInput, type VerdictInput, type VerdictMeta } from "./contract.js";
 import { runPreSignGuards, type GuardContext } from "./guards/index.js";
+import { type JitterConfig, plannedSampleTimes } from "./sampling.js";
 import { scoreEpoch } from "./scoring/scorer.js";
 import type { ScoringTerms } from "./scoring/types.js";
 import type { LiveMarket, TimeWindow } from "./sources/live.js";
@@ -41,32 +42,70 @@ export async function runReplay(
 
 export interface SamplingDeps {
   sleep: (ms: number) => Promise<void>;
+  /** Clock, injectable for tests. Defaults to Date.now. */
+  now?: () => number;
 }
 
 /**
- * Live epoch: take `expectedSamples` samples `sampleSecs` apart, then read the
- * epoch's trades and withdrawals. A revoked key aborts the epoch (→ KEY_REVOKED);
- * other read failures lose that sample and flag serverErrors (→ Outage path).
+ * Live epoch: take one sample inside each of `expectedSamples` windows — at a
+ * TEE-derived, unpredictable offset within the window when `jitter` is supplied
+ * (see sampling.ts) — then read the epoch's trades and withdrawals, plus the
+ * base-token balance at open and close for reconciliation.
+ *
+ * A revoked key aborts the epoch (→ KEY_REVOKED); other read failures lose that
+ * sample and flag serverErrors (→ Outage path). Balance reads are best-effort:
+ * if either is unavailable, reconciliation is simply skipped.
  */
 export async function sampleEpochLive(
   market: LiveMarket,
-  params: { expectedSamples: number; sampleSecs: number; window: TimeWindow },
+  params: {
+    expectedSamples: number;
+    sampleSecs: number;
+    window: TimeWindow;
+    jitter?: JitterConfig;
+  },
   deps: SamplingDeps,
 ): Promise<EpochData> {
+  const now = deps.now ?? Date.now;
   const samples: Sample[] = [];
   let serverErrors = false;
-  for (let i = 0; i < params.expectedSamples; i += 1) {
+
+  const startBaseBalance = await readBalance(market);
+
+  const schedule = plannedSampleTimes(now(), params.expectedSamples, params.sampleSecs, params.jitter);
+  for (const target of schedule) {
+    const wait = target - now();
+    if (wait > 0) await deps.sleep(wait);
     try {
       samples.push(await market.fetchSample());
     } catch (err) {
       if (err instanceof SourceAuthError) throw err;
       serverErrors = true;
     }
-    if (i < params.expectedSamples - 1) await deps.sleep(params.sampleSecs * 1000);
   }
+
   const trades = await market.fetchTrades(params.window);
   const withdrawals = await market.fetchWithdrawals(params.window);
-  return serverErrors ? { samples, trades, withdrawals, serverErrors: true } : { samples, trades, withdrawals };
+  const endBaseBalance = await readBalance(market);
+
+  return {
+    samples,
+    trades,
+    withdrawals,
+    ...(serverErrors ? { serverErrors: true } : {}),
+    ...(startBaseBalance !== undefined ? { startBaseBalance } : {}),
+    ...(endBaseBalance !== undefined ? { endBaseBalance } : {}),
+  };
+}
+
+/** Best-effort base-token balance read; undefined disables reconciliation. */
+async function readBalance(market: LiveMarket): Promise<string | undefined> {
+  try {
+    return await market.fetchBaseBalance();
+  } catch (err) {
+    if (err instanceof SourceAuthError) throw err;
+    return undefined;
+  }
 }
 
 /** Facts the runner must gather (from the contract) before signing a verdict. */
