@@ -118,7 +118,7 @@ async function main(): Promise<void> {
     "",
   ];
   writeFileSync(path.join(outDir, "SUMMARY.md"), summaryLines.join("\n"));
-  console.log(`  evidence/live/SUMMARY.md`);
+  console.log(`  evidence/${label}/SUMMARY.md`);
   console.log("Done.");
 }
 
