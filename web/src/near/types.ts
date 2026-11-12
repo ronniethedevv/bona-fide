@@ -77,3 +77,12 @@ export interface MandateTerms {
   start_ts: string;
   end_ts: string;
 }
+
+/** An agent as the contract reports it. `validity` is "Valid" or an object. */
+export interface AgentView {
+  account_id: string;
+  ppid: string;
+  valid_until_ms: string;
+  enc_pubkey: string | null;
+  validity: "Valid" | Record<string, unknown>;
+}

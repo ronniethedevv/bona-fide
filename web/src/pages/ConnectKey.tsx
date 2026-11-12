@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api } from "../near/contract.js";
+import { resolveEnclavePubkey } from "../near/contract.js";
 import { AGENT_ID, AGENT_URL } from "../near/config.js";
 import { sealKey } from "../near/sealbox.js";
 import { useAsync } from "../hooks/useAsync.js";
@@ -15,7 +15,7 @@ const REASON_TEXT: Record<string, string> = {
 
 export function ConnectKey() {
   const { id = "" } = useParams();
-  const pubkey = useAsync<string | null>(() => api.getAgentPubkey(AGENT_ID), [AGENT_ID]);
+  const pubkey = useAsync<string | null>(() => resolveEnclavePubkey(AGENT_ID), [AGENT_ID]);
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
   const [busy, setBusy] = useState(false);
