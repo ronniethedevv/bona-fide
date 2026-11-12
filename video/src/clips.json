@@ -1,0 +1,11 @@
+{
+  "source": "https://bona-fide-mm.vercel.app",
+  "capturedAt": "2026-11-12T19:12:59.136Z",
+  "available": [
+    "landing",
+    "directory",
+    "mandate-pass",
+    "mandate-fail",
+    "keycheck"
+  ]
+}

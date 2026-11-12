@@ -1,0 +1,4 @@
+node_modules/
+out/
+# Captured footage is regenerated from the live app with `npm run capture`.
+public/clips/*.mp4
