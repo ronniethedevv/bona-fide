@@ -1,11 +1,18 @@
 {
   "source": "https://bona-fide-mm.vercel.app",
-  "capturedAt": "2026-11-12T19:12:59.136Z",
+  "capturedAt": "2026-11-12T19:53:00.805Z",
   "available": [
     "landing",
     "directory",
     "mandate-pass",
     "mandate-fail",
     "keycheck"
-  ]
+  ],
+  "durations": {
+    "landing": 6.866667,
+    "directory": 4.733333,
+    "mandate-pass": 4.4,
+    "mandate-fail": 4.4,
+    "keycheck": 7.966667
+  }
 }
