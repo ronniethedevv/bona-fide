@@ -1,0 +1,11 @@
+{
+  "method": "get_contract_info",
+  "args": {},
+  "block_height": 277368786,
+  "block_hash": "EewTUWbbphBa4CJnwW62aSYCQTjxZ37KNLft5fYbQMLv",
+  "result": {
+    "requires_tee": true,
+    "attestation_expiration_time_ms": "604800000",
+    "owner_id": "command-hay.testnet"
+  }
+}

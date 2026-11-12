@@ -108,7 +108,7 @@ Stated plainly, because it matters:
 | Deterministic scorer, jitter, balance reconciliation, guards | **Real code** — 88 agent tests + 18 contract tests in CI, property-based, mutation-checked, cross-checked against an independent implementation |
 | Market data behind the seeded verdicts | **Simulated** — committed replay fixtures, labelled with an amber **SIMULATED DATA** badge in the app; scoring of them is re-executable by anyone (`npm run demo:replay`) |
 | Read-only key check | **Real logic**; demonstrated against canned Binance responses (labelled), since the live check needs a real exchange key |
-| TEE attestation | **Local mode** — this deployment runs `requires_tee: false` with the mock local attestation. The real-attestation path (Phala dstack, `environment: TEE`) is the same committed pipeline, one config flag away; its status is tracked in [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) |
+| TEE attestation | **Real, live on testnet** — a second deployment, [`bona-fide-tee1.testnet`](https://testnet.nearblocks.io/address/bona-fide-tee1.testnet), runs `requires_tee: true` on Phala Cloud (Intel TDX, dstack 0.5.12). Its contract verified a genuine hardware quote and registered the enclave agent — non-zero measurements, real platform id, enclave key published — captured block-stamped in [`evidence/live-tee/`](./evidence/live-tee/). The demo mandates above remain on the local-attestation deployment, labelled as such |
 
 ## How to judge this fastest
 
