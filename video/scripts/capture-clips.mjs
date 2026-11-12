@@ -28,6 +28,7 @@ const SIZE = { width: 1440, height: 810 }; // 16:9, scaled up in the composition
 /** This container ships Chromium at a fixed path; override elsewhere. */
 const EXECUTABLE = process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium";
 const FFMPEG = process.env.FFMPEG_PATH ?? "ffmpeg";
+const FFPROBE = process.env.FFPROBE_PATH ?? "ffprobe";
 
 const settle = (page, ms = 1200) => page.waitForTimeout(ms);
 
@@ -142,7 +143,7 @@ async function record(browser, clip) {
 
   if (frames.length < 2) {
     rmSync(work, { recursive: true, force: true });
-    return false;
+    return null;
   }
 
   // Write the frames, then a concat list whose durations are the real gaps.
@@ -172,23 +173,33 @@ async function record(browser, clip) {
     { stdio: "inherit" },
   );
   rmSync(work, { recursive: true, force: true });
-  console.log(`  ✓ clips/${clip.name}.mp4  (${frames.length} frames)`);
-  return true;
+  const seconds = Number(
+    execFileSync(FFPROBE, [
+      "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", dest,
+    ]).toString().trim(),
+  );
+  console.log(`  ✓ clips/${clip.name}.mp4  (${frames.length} frames, ${seconds.toFixed(2)}s)`);
+  return seconds;
 }
 
 async function main() {
   mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch({ executablePath: EXECUTABLE });
   const made = [];
+  const durations = {};
 
   for (const clip of CLIPS) {
-    if (await record(browser, clip)) made.push(clip.name);
+    const seconds = await record(browser, clip);
+    if (seconds !== null) {
+      made.push(clip.name);
+      durations[clip.name] = seconds;
+    }
   }
 
   await browser.close();
   writeFileSync(
     join(ROOT, "src", "clips.json"),
-    JSON.stringify({ source: BASE, capturedAt: new Date().toISOString(), available: made }, null, 2) + "\n",
+    JSON.stringify({ source: BASE, capturedAt: new Date().toISOString(), available: made, durations }, null, 2) + "\n",
   );
   console.log(`\n${made.length}/${CLIPS.length} clips captured from ${BASE}`);
 }
