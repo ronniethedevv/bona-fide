@@ -2,7 +2,7 @@
 # The CLI builds the image from ./Dockerfile and rewrites `image` to the pushed
 # digest; the dstack socket mount gives the enclave its attestation + key.
 services:
-  bona-fide-agent:
+  shade-agent-app:
     build:
       context: .
       dockerfile: Dockerfile
