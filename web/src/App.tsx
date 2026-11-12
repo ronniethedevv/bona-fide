@@ -4,6 +4,7 @@ import { Cosign } from "./pages/Cosign.js";
 import { ConnectKey } from "./pages/ConnectKey.js";
 import { Directory } from "./pages/Directory.js";
 import { KeyCheck } from "./pages/KeyCheck.js";
+import { Landing } from "./pages/Landing.js";
 import { MandatePage } from "./pages/MandatePage.js";
 import { MmProfile } from "./pages/MmProfile.js";
 import { NewMandate } from "./pages/NewMandate.js";
@@ -12,7 +13,8 @@ export function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Directory />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/directory" element={<Directory />} />
         <Route path="/mm/:account" element={<MmProfile />} />
         <Route path="/mandate/:id" element={<MandatePage />} />
         <Route path="/mandate/:id/cosign" element={<Cosign />} />
