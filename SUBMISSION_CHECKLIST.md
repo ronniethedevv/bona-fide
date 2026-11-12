@@ -28,19 +28,22 @@ free trial credit.
 - [x] **Web app hosted** (Vercel free tier, pure static, reads NEAR from the
       browser): <https://bona-fide-mm.vercel.app> — linked from the README.
       Q-012: keep it up through 2026-11-18, ideally 2026-11-25.
-- [x] **TEE burst on Phala — real attestation recorded on-chain.**
+- [x] **TEE burst on Phala — real attestation AND attested verdicts on-chain.**
       [`bona-fide-tee1.testnet`](https://testnet.nearblocks.io/address/bona-fide-tee1.testnet)
-      deployed with `requires_tee: true`; the agent, running on Phala Cloud
-      (Intel TDX, dstack 0.5.12, Phala KMS 2026-11), registered with a genuine
-      hardware quote the contract verified against owner-approved measurements.
-      Block-stamped capture: [`evidence/live-tee/`](./evidence/live-tee/).
-      Notable: the Shade CLI's bundled dstack versions (≤0.5.8) are KMS-retired;
-      the gap was bridged by approving the enclave's own reported measurements
-      (`agent/scripts/fix-measurements.ts`).
-      Remaining (optional): seed demo verdicts through the TEE agent — needs
-      `SEED_ENABLED` in the CVM env (a compose change + measurement re-approve).
-      **Stop the CVM in the Phala dashboard when done** — the on-chain record
-      survives it. ⚠️ Auto-topup stays OFF.
+      runs `requires_tee: true`. The agent, inside an Intel TDX enclave on Phala
+      Cloud (dstack 0.5.12, Phala KMS 2026-11), registered with a genuine
+      hardware quote the contract verified, then scored the replay scenarios
+      *inside the enclave* and submitted them: mandate `0` **Pass, Pass**,
+      mandate `1` **Fail (`LOAN_CAP`)**. Block-stamped in
+      [`evidence/live-tee/`](./evidence/live-tee/).
+      Notable: the Shade CLI's bundled dstack versions (<=0.5.8) are KMS-retired
+      and its key-provider digest predates KMS 2026-11, so the enclave's own
+      reported measurements were approved instead
+      (`agent/scripts/fix-measurements.ts`); changing the CVM compose to enable
+      seeding was staged with `agent/scripts/phala-stage-seed-env.mjs` so the new
+      compose hash could be approved before boot.
+      **Stop the CVM in the Phala dashboard** — the on-chain record survives it.
+      WARNING: auto-topup stays OFF.
 - [ ] **Screenshots** into `evidence/screenshots/` (they double as X-post
       media): the Directory; the honest mandate's green timeline; the dumping
       mandate's red `LOAN_CAP` timeline; the key check rejecting

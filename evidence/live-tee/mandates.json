@@ -1,7 +1,46 @@
 {
   "method": "list_mandates",
   "args": {},
-  "block_height": 277368787,
-  "block_hash": "7FFeM5etBFpUKtJvudBDp4ErDkMRRXCdYCkp5bPuN2tQ",
-  "result": []
+  "block_height": 277398638,
+  "block_hash": "J7GctWbXQbRcuswPUq4wBy91kops9aUvWzYc4WWdpAuP",
+  "result": [
+    {
+      "id": "0",
+      "mm": "command-hay.testnet",
+      "project": "command-hay.testnet",
+      "exchange": "binance",
+      "pair": "TOKEN_USDT",
+      "account_label": "mm-honest",
+      "max_spread_bps": 100,
+      "depth_band_bps": 200,
+      "min_depth_per_side_quote": "10000000000",
+      "min_uptime_bps": 9000,
+      "loan_cap_per_epoch_base": "1000000",
+      "epoch_secs": 120,
+      "sample_secs": 30,
+      "start_ts": "1794507259",
+      "end_ts": "1794508459",
+      "status": "Active",
+      "terms_hash": "2eeab43e491ce56ca8547eeb12e5d998b265c555b6dd51d6604fd66a0416e8ac"
+    },
+    {
+      "id": "1",
+      "mm": "command-hay.testnet",
+      "project": "command-hay.testnet",
+      "exchange": "binance",
+      "pair": "TOKEN_USDT",
+      "account_label": "mm-dumping",
+      "max_spread_bps": 100,
+      "depth_band_bps": 200,
+      "min_depth_per_side_quote": "10000000000",
+      "min_uptime_bps": 9000,
+      "loan_cap_per_epoch_base": "1000000",
+      "epoch_secs": 120,
+      "sample_secs": 30,
+      "start_ts": "1794507259",
+      "end_ts": "1794508459",
+      "status": "Active",
+      "terms_hash": "118bbca0231c84a9d7920c0cf70e97158b2587b1e0acbc1ffa5d5e1e887308d4"
+    }
+  ]
 }

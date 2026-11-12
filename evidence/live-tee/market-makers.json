@@ -1,7 +1,19 @@
 {
   "method": "list_mms",
   "args": {},
-  "block_height": 277368788,
-  "block_hash": "HdMiR2mtN659AyKUFoeai9km8AEumHhu4YFdUcibEH2W",
-  "result": []
+  "block_height": 277398639,
+  "block_hash": "G49d4gGMnxz3YxTmYKaPcAFcFnyzJxTPhWf4LsmJc33e",
+  "result": [
+    {
+      "account_id": "command-hay.testnet",
+      "summary": {
+        "engagements": 2,
+        "pass": 2,
+        "fail": 1,
+        "missed": 0,
+        "outage": 0,
+        "last_verdict_ms": "1794507281692"
+      }
+    }
+  ]
 }
