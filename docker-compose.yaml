@@ -3,9 +3,9 @@
 # digest; the dstack socket mount gives the enclave its attestation + key.
 services:
   shade-agent-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # No build section: the Shade CLI builds/pushes the image and rewrites
+    # `image` to its digest; inside the CVM there is no source to build from,
+    # and a build attempt fails the whole VM.
     image: ${DOCKER_TAG}
     container_name: bona-fide-agent
     platform: linux/amd64
