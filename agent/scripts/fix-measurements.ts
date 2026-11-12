@@ -10,10 +10,15 @@
  * same owner-approves-what-they-verified model the normal flow uses.
  *
  * Usage (from agent/, with ../.env filled, owner key = SPONSOR_*):
- *   npx tsx scripts/fix-measurements.ts <mrtd> <rtmr0> <rtmr1> <rtmr2>
+ *   npx tsx scripts/fix-measurements.ts <mrtd> <rtmr0> <rtmr1> <rtmr2> \
+ *       [key_provider_event_digest] [app_compose_hash]
  *
- * The four values are 96-char hex strings from the CVM's attestation
- * (Phala dashboard → the CVM → Attestation / chain of trust).
+ * The four rtmr values are 96-char hex strings from the CVM's attestation
+ * (Phala dashboard → the CVM → Attestation / TCB details). The optional
+ * fifth (96-hex) and sixth (64-hex) args are the key-provider event digest
+ * and the compose hash from the quote's RTMR3 event log; when omitted they
+ * are reused from the entry already approved on-chain (which is only right
+ * if the CLI that approved it computed them for the same KMS + compose).
  */
 import "dotenv/config";
 import { Account, JsonRpcProvider, KeyPair, KeyPairSigner } from "near-api-js";
@@ -33,11 +38,16 @@ function env(name: string): string {
   return v;
 }
 
-const [mrtd, rtmr0, rtmr1, rtmr2] = process.argv.slice(2);
+const [mrtd, rtmr0, rtmr1, rtmr2, digestArg, composeArg] = process.argv.slice(2);
 const hex96 = /^[0-9a-f]{96}$/i;
-if (![mrtd, rtmr0, rtmr1, rtmr2].every((v) => v !== undefined && hex96.test(v))) {
+const hex64 = /^[0-9a-f]{64}$/i;
+if (
+  ![mrtd, rtmr0, rtmr1, rtmr2].every((v) => v !== undefined && hex96.test(v)) ||
+  (digestArg !== undefined && !hex96.test(digestArg)) ||
+  (composeArg !== undefined && !hex64.test(composeArg))
+) {
   console.error(
-    "Usage: npx tsx scripts/fix-measurements.ts <mrtd> <rtmr0> <rtmr1> <rtmr2>   (each 96 hex chars)",
+    "Usage: npx tsx scripts/fix-measurements.ts <mrtd> <rtmr0> <rtmr1> <rtmr2> [key_provider_event_digest(96hex)] [app_compose_hash(64hex)]",
   );
   process.exit(1);
 }
@@ -69,8 +79,9 @@ async function view<T>(method: string): Promise<T> {
 async function main(): Promise<void> {
   const approved = await view<FullMeasurementsHex[]>("get_approved_measurements");
   if (approved.length === 0) throw new Error("No approved measurements on the contract — run `shade deploy` first.");
-  // The CLI computed these two correctly at deploy; only the rtmrs were placeholders.
-  const { key_provider_event_digest, app_compose_hash_payload } = approved[0];
+  // Explicit args win; otherwise reuse what is already approved on-chain.
+  const key_provider_event_digest = (digestArg ?? approved[0].key_provider_event_digest).toLowerCase();
+  const app_compose_hash_payload = (composeArg ?? approved[0].app_compose_hash_payload).toLowerCase();
 
   const real: FullMeasurementsHex = {
     rtmrs: {
