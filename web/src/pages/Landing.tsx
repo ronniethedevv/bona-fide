@@ -31,8 +31,8 @@ async function loadTotals(): Promise<Totals> {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="stat">
-      <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
+      <div className="stat-value">{value}</div>
     </div>
   );
 }
@@ -65,10 +65,8 @@ export function Landing() {
 
           <div className="terminal">
             <div className="terminal-bar">
-              <span className="dot" />
-              <span className="dot" />
-              <span className="dot" />
-              <span className="terminal-tag">verify it yourself</span>
+              <span className="terminal-label">Offline check</span>
+              <span className="terminal-tag">no wallet · no network</span>
             </div>
             <div className="terminal-body">
               <div className="term-cmd">npm run demo:replay</div>
@@ -203,7 +201,7 @@ export function Landing() {
 
       <section className="section">
         <div className="container">
-          <div className="section-head is-centered">
+          <div className="section-head">
             <p className="eyebrow">Who it is for</p>
             <h2 className="section-title">One record, three readers.</h2>
           </div>

@@ -39,7 +39,8 @@ export function Directory() {
       {!loading && !error && rows.length === 0 && <p className="muted">No market makers yet.</p>}
 
       {rows.length > 0 && (
-        <table className="table">
+        <div className="table-scroll">
+          <table className="table">
           <thead>
             <tr>
               <th>Account</th>
@@ -64,7 +65,8 @@ export function Directory() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
     </section>
   );
