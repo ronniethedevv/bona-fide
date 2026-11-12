@@ -28,21 +28,19 @@ free trial credit.
 - [x] **Web app hosted** (Vercel free tier, pure static, reads NEAR from the
       browser): <https://bona-fide-mm.vercel.app> — linked from the README.
       Q-012: keep it up through 2026-11-18, ideally 2026-11-25.
-- [ ] **TEE burst on Phala** (fits comfortably in the $5 trial credit). The
-      attestation lands **on-chain permanently**, so the paid CVM only needs to
-      run for the deploy + seeding — hours, not weeks:
-      1. Create a free Docker Hub account; set `build_docker_image.tag` in
-         `deployment.yaml`.
-      2. Set `environment: TEE`; `shade plan`, then `shade deploy` (builds the
-         image, approves the **real** dstack measurements, deploys to Phala).
-      3. Re-seed through the hosted agent; run `npm run evidence` so the real
-         attestation is captured block-stamped.
-      4. **Stop the CVM in the Phala dashboard.** The on-chain record — real
-         measurements approved, verdicts accepted from the attested agent —
-         survives it. Update the README's "What is real" table accordingly.
-      ⚠️ **Never enable auto-topup on Phala** — a card is on file and this
-      project spends no money. Prepaid balance running out just stops the CVM;
-      that is fine.
+- [x] **TEE burst on Phala — real attestation recorded on-chain.**
+      [`bona-fide-tee1.testnet`](https://testnet.nearblocks.io/address/bona-fide-tee1.testnet)
+      deployed with `requires_tee: true`; the agent, running on Phala Cloud
+      (Intel TDX, dstack 0.5.12, Phala KMS 2026-11), registered with a genuine
+      hardware quote the contract verified against owner-approved measurements.
+      Block-stamped capture: [`evidence/live-tee/`](./evidence/live-tee/).
+      Notable: the Shade CLI's bundled dstack versions (≤0.5.8) are KMS-retired;
+      the gap was bridged by approving the enclave's own reported measurements
+      (`agent/scripts/fix-measurements.ts`).
+      Remaining (optional): seed demo verdicts through the TEE agent — needs
+      `SEED_ENABLED` in the CVM env (a compose change + measurement re-approve).
+      **Stop the CVM in the Phala dashboard when done** — the on-chain record
+      survives it. ⚠️ Auto-topup stays OFF.
 - [ ] **Screenshots** into `evidence/screenshots/` (they double as X-post
       media): the Directory; the honest mandate's green timeline; the dumping
       mandate's red `LOAN_CAP` timeline; the key check rejecting

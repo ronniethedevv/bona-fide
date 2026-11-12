@@ -59,7 +59,11 @@ async function view(method: string, args: Record<string, unknown>): Promise<View
     result?: { result: number[]; block_height: number; block_hash: string };
     error?: unknown;
   };
-  if (!res.ok || !body.result) throw new Error(`${method} failed: ${JSON.stringify(body.error ?? res.status)}`);
+  // A panicking view returns body.result with an `error` string and no bytes.
+  if (!res.ok || !body.result?.result)
+    throw new Error(
+      `${method} failed: ${JSON.stringify(body.error ?? (body.result as { error?: unknown } | undefined)?.error ?? res.status)}`,
+    );
   return {
     method,
     args,
@@ -70,20 +74,27 @@ async function view(method: string, args: Record<string, unknown>): Promise<View
 }
 
 async function main(): Promise<void> {
-  const outDir = path.resolve(process.cwd(), "../evidence/live");
+  const outRel = process.env.EVIDENCE_DIR ?? "../evidence/live";
+  const outDir = path.resolve(process.cwd(), outRel);
+  const label = path.basename(outDir);
   mkdirSync(outDir, { recursive: true });
 
   const captured: ViewResult[] = [];
   const save = (name: string, v: ViewResult) => {
     captured.push(v);
     writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify(v, null, 2) + "\n");
-    console.log(`  evidence/live/${name}.json  (block ${v.block_height})`);
+    console.log(`  evidence/${label}/${name}.json  (block ${v.block_height})`);
   };
 
   console.log(`Reading ${contractId} via ${RPC}…`);
   save("contract-info", await view("get_contract_info", {}));
   save("agents", await view("get_agents", {}));
-  save("whitelisted-agents", await view("get_whitelisted_agents_for_local", {}));
+  // Local-mode only view; on a requires_tee deployment it may panic — skip then.
+  try {
+    save("whitelisted-agents", await view("get_whitelisted_agents_for_local", {}));
+  } catch (e) {
+    console.log(`  (whitelisted-agents skipped: ${e instanceof Error ? e.message.slice(0, 120) : String(e)})`);
+  }
   const mandates = await view("list_mandates", {});
   save("mandates", mandates);
   save("market-makers", await view("list_mms", {}));
