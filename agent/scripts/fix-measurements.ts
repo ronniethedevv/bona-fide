@@ -78,7 +78,8 @@ async function view<T>(method: string): Promise<T> {
 
 async function main(): Promise<void> {
   const approved = await view<FullMeasurementsHex[]>("get_approved_measurements");
-  if (approved.length === 0) throw new Error("No approved measurements on the contract — run `shade deploy` first.");
+  if (approved.length === 0)
+    throw new Error("No approved measurements on the contract — run `shade deploy` first.");
   // Explicit args win; otherwise reuse what is already approved on-chain.
   const key_provider_event_digest = (digestArg ?? approved[0].key_provider_event_digest).toLowerCase();
   const app_compose_hash_payload = (composeArg ?? approved[0].app_compose_hash_payload).toLowerCase();
@@ -101,17 +102,29 @@ async function main(): Promise<void> {
   );
 
   console.log(`Approving real measurements on ${contractId}…`);
-  await master.callFunction({ contractId, methodName: "approve_measurements", args: { measurements: real }, gas: GAS });
+  await master.callFunction({
+    contractId,
+    methodName: "approve_measurements",
+    args: { measurements: real },
+    gas: GAS,
+  });
 
   const stale = approved.filter((m) => JSON.stringify(m) !== JSON.stringify(real));
   for (const m of stale) {
     console.log(`Removing stale entry (rtmr0 ${m.rtmrs.rtmr0.slice(0, 12)}…)`);
-    await master.callFunction({ contractId, methodName: "remove_measurements", args: { measurements: m }, gas: GAS });
+    await master.callFunction({
+      contractId,
+      methodName: "remove_measurements",
+      args: { measurements: m },
+      gas: GAS,
+    });
   }
 
   const after = await view<FullMeasurementsHex[]>("get_approved_measurements");
   console.log(`Done. Approved entries now: ${after.length}`);
-  console.log("The agent in the CVM registers on its next restart/retry. Watch the CVM logs on the Phala dashboard.");
+  console.log(
+    "The agent in the CVM registers on its next restart/retry. Watch the CVM logs on the Phala dashboard.",
+  );
 }
 
 void main().catch((e) => {

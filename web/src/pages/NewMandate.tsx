@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { BackLink } from "../components/BackLink.js";import { useNavigate } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";
+import { useNavigate } from "react-router-dom";
 import { termsHash } from "../near/terms.js";
 import type { MandateTerms } from "../near/types.js";
 import { useWallet } from "../near/WalletContext.js";

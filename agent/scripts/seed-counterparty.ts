@@ -84,7 +84,11 @@ interface Mandate {
 /** Balance in NEAR, two decimals, read live — nothing about cost is hardcoded. */
 async function balanceNear(accountId: string): Promise<string> {
   try {
-    const { amount } = await rpc<{ amount: string }>({ request_type: "view_account", finality: "final", account_id: accountId });
+    const { amount } = await rpc<{ amount: string }>({
+      request_type: "view_account",
+      finality: "final",
+      account_id: accountId,
+    });
     return (Number(BigInt(amount) / BigInt("10000000000000000000000")) / 100).toFixed(2);
   } catch {
     return "does not exist";
@@ -128,23 +132,29 @@ async function main(): Promise<void> {
   const mandates = await view<Mandate[]>("list_mandates", { from_index: 0, limit: 200 });
   const already = mandates.find((m) => m.mm === mmId && m.project === projectId && m.account_label === LABEL);
   if (already) {
-    console.log(`Nothing to do: mandate ${already.id} already pairs ${mmId} with ${projectId} (${already.status}).`);
+    console.log(
+      `Nothing to do: mandate ${already.id} already pairs ${mmId} with ${projectId} (${already.status}).`,
+    );
     return;
   }
   console.log(`Existing mandates: ${mandates.length}`);
   for (const m of mandates)
-    console.log(`  #${m.id}  mm=${m.mm}  project=${m.project}${m.mm === m.project ? "   <- same account, no counterparty" : ""}`);
+    console.log(
+      `  #${m.id}  mm=${m.mm}  project=${m.project}${m.mm === m.project ? "   <- same account, no counterparty" : ""}`,
+    );
 
   const allowlisted = await view<boolean>("is_project_allowlisted", { account_id: projectId });
   console.log(`\n${projectId} allowlisted as a project: ${allowlisted}`);
 
   const plan: Array<[string, string, Record<string, unknown>]> = [];
-  if (!allowlisted) plan.push([projectId, "set_project_allowlisted", { account_id: projectId, allowed: true }]);
+  if (!allowlisted)
+    plan.push([projectId, "set_project_allowlisted", { account_id: projectId, allowed: true }]);
   plan.push([mmId, "propose_mandate", { terms: terms(Math.floor(Date.now() / 1000)) }]);
   plan.push([projectId, "cosign_mandate", { id: "<the id propose_mandate returns>" }]);
 
   console.log("\nCalls to make:");
-  for (const [signer, method, args] of plan) console.log(`  ${signer} → ${method}(${JSON.stringify(args).slice(0, 110)}…)`);
+  for (const [signer, method, args] of plan)
+    console.log(`  ${signer} → ${method}(${JSON.stringify(args).slice(0, 110)}…)`);
 
   if (!SEND) {
     console.log("\nDry run — nothing was broadcast. Re-run with --send to do it for real.");
@@ -158,7 +168,12 @@ async function main(): Promise<void> {
 
   if (!allowlisted) {
     console.log(`\nAllowlisting ${projectId}…`);
-    await project.callFunction({ contractId, methodName: "set_project_allowlisted", args: { account_id: projectId, allowed: true }, gas: GAS });
+    await project.callFunction({
+      contractId,
+      methodName: "set_project_allowlisted",
+      args: { account_id: projectId, allowed: true },
+      gas: GAS,
+    });
   }
 
   console.log(`Proposing as ${mmId}…`);
@@ -174,7 +189,9 @@ async function main(): Promise<void> {
   await project.callFunction({ contractId, methodName: "cosign_mandate", args: { id }, gas: GAS });
 
   const stored = await view<Mandate | null>("get_mandate", { id });
-  console.log(`\nOn chain now: #${id}  mm=${stored?.mm}  project=${stored?.project}  status=${stored?.status}`);
+  console.log(
+    `\nOn chain now: #${id}  mm=${stored?.mm}  project=${stored?.project}  status=${stored?.status}`,
+  );
   console.log(`  https://testnet.nearblocks.io/address/${contractId}`);
   console.log(`  /mandate/${id}`);
 

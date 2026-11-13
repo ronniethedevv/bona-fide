@@ -226,20 +226,35 @@ async function record(browser, clip) {
   execFileSync(
     FFMPEG,
     [
-      "-y", "-hide_banner", "-loglevel", "error",
-      "-f", "concat", "-safe", "0", "-i", listFile,
-      "-r", "30",
-      "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-      "-pix_fmt", "yuv420p",
+      "-y",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      listFile,
+      "-r",
+      "30",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "20",
+      "-pix_fmt",
+      "yuv420p",
       dest,
     ],
     { stdio: "inherit" },
   );
   rmSync(work, { recursive: true, force: true });
   const seconds = Number(
-    execFileSync(FFPROBE, [
-      "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", dest,
-    ]).toString().trim(),
+    execFileSync(FFPROBE, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", dest])
+      .toString()
+      .trim(),
   );
   console.log(`  ✓ clips/${clip.name}.mp4  (${frames.length} frames, ${seconds.toFixed(2)}s)`);
   return seconds;
@@ -262,7 +277,11 @@ async function main() {
   await browser.close();
   writeFileSync(
     join(ROOT, "src", "clips.json"),
-    JSON.stringify({ source: BASE, capturedAt: new Date().toISOString(), available: made, durations }, null, 2) + "\n",
+    JSON.stringify(
+      { source: BASE, capturedAt: new Date().toISOString(), available: made, durations },
+      null,
+      2,
+    ) + "\n",
   );
   console.log(`\n${made.length}/${CLIPS.length} clips captured from ${BASE}`);
 }

@@ -8,8 +8,18 @@
   "epochs": [
     {
       "samples": [
-        { "publicBestBid": "1.0000", "publicBestAsk": "1.0020", "mmBids": [{ "price": "0.9990", "size": "20000" }], "mmAsks": [{ "price": "1.0030", "size": "20000" }] },
-        { "publicBestBid": "1.0005", "publicBestAsk": "1.0025", "mmBids": [{ "price": "0.9995", "size": "20000" }], "mmAsks": [{ "price": "1.0035", "size": "20000" }] }
+        {
+          "publicBestBid": "1.0000",
+          "publicBestAsk": "1.0020",
+          "mmBids": [{ "price": "0.9990", "size": "20000" }],
+          "mmAsks": [{ "price": "1.0030", "size": "20000" }]
+        },
+        {
+          "publicBestBid": "1.0005",
+          "publicBestAsk": "1.0025",
+          "mmBids": [{ "price": "0.9995", "size": "20000" }],
+          "mmAsks": [{ "price": "1.0035", "size": "20000" }]
+        }
       ],
       "trades": [],
       "withdrawals": [],

@@ -31,10 +31,7 @@ export class KeyIntakeError extends Error {
  * keypair and validate the plaintext. Throws `KeyIntakeError("INVALID")` on any
  * decryption/parse failure — the message never contains key material.
  */
-export async function openSealedKey(
-  sealedBase64: string,
-  keypair: EnclaveKeypair,
-): Promise<KeyPayload> {
+export async function openSealedKey(sealedBase64: string, keypair: EnclaveKeypair): Promise<KeyPayload> {
   const sodium = await getSodium();
   let openedBytes: Uint8Array | null = null;
   try {

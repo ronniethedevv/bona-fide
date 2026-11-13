@@ -50,9 +50,9 @@ export function Landing() {
             Proof a market maker <em>kept its word.</em>
           </h1>
           <p className="hero-sub">
-            Token projects lend their treasury to market makers and hope. BonaFide scores the
-            deal — spread, depth, uptime, loan discipline — inside sealed hardware and writes the
-            verdict to NEAR. The order book never leaves the enclave.
+            Token projects lend their treasury to market makers and hope. BonaFide scores the deal — spread,
+            depth, uptime, loan discipline — inside sealed hardware and writes the verdict to NEAR. The order
+            book never leaves the enclave.
           </p>
           <div className="hero-cta">
             <Link className="btn btn-lg" to="/directory">
@@ -76,14 +76,13 @@ export function Landing() {
                 &nbsp;&nbsp;|&nbsp;&nbsp;epoch 1: <span className="term-pass">Pass</span>
               </div>
               <div className="term-out">
-                dumping-mm&nbsp;&nbsp;&nbsp;epoch 0:{" "}
-                <span className="term-fail">Fail (LOAN_CAP)</span>
+                dumping-mm&nbsp;&nbsp;&nbsp;epoch 0: <span className="term-fail">Fail (LOAN_CAP)</span>
               </div>
             </div>
           </div>
           <p className="terminal-note">
-            The real scorer, the committed scenarios, the same verdicts the chain holds. No wallet,
-            no exchange account, no network.
+            The real scorer, the committed scenarios, the same verdicts the chain holds. No wallet, no
+            exchange account, no network.
           </p>
         </div>
       </section>
@@ -101,8 +100,8 @@ export function Landing() {
             <p className="eyebrow">The life of one mandate</p>
             <h2 className="section-title">Four steps, none of which require trusting us.</h2>
             <p className="section-sub">
-              Every claim a market maker makes about its own performance is settled by code that
-              neither side can quietly change.
+              Every claim a market maker makes about its own performance is settled by code that neither side
+              can quietly change.
             </p>
           </div>
 
@@ -111,37 +110,36 @@ export function Landing() {
               <div className="step-num">01</div>
               <h3>Co-sign the terms</h3>
               <p>
-                The market maker proposes a mandate — pair, exchange, KPI bounds, loan cap, dates.
-                The terms are hashed and the project co-signs. From then on every verdict binds to
-                that hash, so the rules cannot drift.
+                The market maker proposes a mandate — pair, exchange, KPI bounds, loan cap, dates. The terms
+                are hashed and the project co-signs. From then on every verdict binds to that hash, so the
+                rules cannot drift.
               </p>
             </div>
             <div className="step">
               <div className="step-num">02</div>
               <h3>Hand over a key that cannot spend</h3>
               <p>
-                A read-only exchange key, encrypted in the browser to a public key that exists only
-                inside the enclave. Before first use the enclave asks the exchange what the key may
-                do; trade or withdrawal rights are rejected on sight.
+                A read-only exchange key, encrypted in the browser to a public key that exists only inside the
+                enclave. Before first use the enclave asks the exchange what the key may do; trade or
+                withdrawal rights are rejected on sight.
               </p>
             </div>
             <div className="step">
               <div className="step-num">03</div>
               <h3>Watch at moments nobody can predict</h3>
               <p>
-                Each epoch is sampled at pseudo-random times derived from the enclave&rsquo;s own
-                key — reproducible for an auditor, unknowable in advance. Quoting only when you are
-                being watched stops working.
+                Each epoch is sampled at pseudo-random times derived from the enclave&rsquo;s own key —
+                reproducible for an auditor, unknowable in advance. Quoting only when you are being watched
+                stops working.
               </p>
             </div>
             <div className="step">
               <div className="step-num">04</div>
               <h3>Plain code decides</h3>
               <p>
-                A deterministic scorer computes spread, depth, uptime, net sells and withdrawals,
-                then reconciles the balance. The contract accepts verdicts only from approved,
-                attested code, and if an epoch&rsquo;s verdict never arrives, anyone may record the
-                miss.
+                A deterministic scorer computes spread, depth, uptime, net sells and withdrawals, then
+                reconciles the balance. The contract accepts verdicts only from approved, attested code, and
+                if an epoch&rsquo;s verdict never arrives, anyone may record the miss.
               </p>
             </div>
           </div>
@@ -154,10 +152,9 @@ export function Landing() {
             <p className="eyebrow">Verification</p>
             <h2 className="section-title">Verified by the hardware, not by us.</h2>
             <p className="section-sub">
-              A second deployment runs with attestation required. Its contract refuses any verdict
-              whose code measurements the owner has not approved — so to trust a verdict you do not
-              have to trust the operator, only Intel&rsquo;s attestation and a hash you can read
-              on-chain yourself.
+              A second deployment runs with attestation required. Its contract refuses any verdict whose code
+              measurements the owner has not approved — so to trust a verdict you do not have to trust the
+              operator, only Intel&rsquo;s attestation and a hash you can read on-chain yourself.
             </p>
             <p style={{ marginTop: 24 }}>
               <a href={TEE.explorer} target="_blank" rel="noreferrer">
@@ -172,7 +169,10 @@ export function Landing() {
               {attestationIsCurrent() ? (
                 <span className="pill pill-pass">Valid</span>
               ) : (
-                <span className="pill pill-simulated" title="The quote has aged out. The verdicts it signed stay in the record.">
+                <span
+                  className="pill pill-simulated"
+                  title="The quote has aged out. The verdicts it signed stay in the record."
+                >
                   Expired
                 </span>
               )}
@@ -225,8 +225,8 @@ export function Landing() {
             <div className="uc-card">
               <h3>Token projects</h3>
               <p>
-                Stop taking the market maker&rsquo;s word for it. Commit the terms, read the
-                verdicts, and see a missed epoch for exactly what it is.
+                Stop taking the market maker&rsquo;s word for it. Commit the terms, read the verdicts, and see
+                a missed epoch for exactly what it is.
               </p>
               <div className="uc-line">
                 <span>Terms</span>
@@ -245,8 +245,8 @@ export function Landing() {
             <div className="uc-card">
               <h3>Market makers</h3>
               <p>
-                Prove a track record without showing your book. A read-only key, a sealed enclave,
-                and a record you own and can carry to the next negotiation.
+                Prove a track record without showing your book. A read-only key, a sealed enclave, and a
+                record you own and can carry to the next negotiation.
               </p>
               <div className="uc-line">
                 <span>Order book</span>
@@ -265,8 +265,8 @@ export function Landing() {
             <div className="uc-card">
               <h3>Everyone else</h3>
               <p>
-                The scorer is open source and the verdicts are public. Recompute the demo scenarios
-                offline, then check the attestation that signed the live ones.
+                The scorer is open source and the verdicts are public. Recompute the demo scenarios offline,
+                then check the attestation that signed the live ones.
               </p>
               <div className="uc-line">
                 <span>Scorer</span>
@@ -295,23 +295,22 @@ export function Landing() {
             <div className="limit">
               <h3>Attestation, not re-execution</h3>
               <p>
-                Live verdicts are computed over samples only the enclave saw; publishing them would
-                leak the book. You verify that approved, attested code produced the verdict — not by
-                re-running it.
+                Live verdicts are computed over samples only the enclave saw; publishing them would leak the
+                book. You verify that approved, attested code produced the verdict — not by re-running it.
               </p>
             </div>
             <div className="limit">
               <h3>The exchange is a trusted oracle</h3>
               <p>
-                We attest our computation over what the exchange reported. We cannot prove the
-                exchange reported truthfully.
+                We attest our computation over what the exchange reported. We cannot prove the exchange
+                reported truthfully.
               </p>
             </div>
             <div className="limit">
               <h3>One key shows one account</h3>
               <p>
-                Balance reconciliation catches value leaving by routes the trade log never shows,
-                but it cannot prove the market maker has no other accounts.
+                Balance reconciliation catches value leaving by routes the trade log never shows, but it
+                cannot prove the market maker has no other accounts.
               </p>
             </div>
           </div>
@@ -321,8 +320,8 @@ export function Landing() {
       <section className="cta-band">
         <h2>Read the record.</h2>
         <p>
-          Two mandates, three verdicts, one deliberate failure — live on NEAR testnet, and
-          checkable without asking anyone&rsquo;s permission.
+          Two mandates, three verdicts, one deliberate failure — live on NEAR testnet, and checkable without
+          asking anyone&rsquo;s permission.
         </p>
         <div className="hero-cta" style={{ marginBottom: 0 }}>
           <Link className="btn btn-lg" to="/directory">

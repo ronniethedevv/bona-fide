@@ -54,10 +54,20 @@ async function main(): Promise<void> {
     new KeyPairSigner(KeyPair.fromString(env("SPONSOR_PRIVATE_KEY") as `ed25519:${string}`)),
   );
   console.log(`Restoring measurements on ${CONTRACT} as ${signer}…`);
-  await master.callFunction({ contractId: CONTRACT, methodName: "approve_measurements", args: { measurements: ZEROS }, gas: GAS });
+  await master.callFunction({
+    contractId: CONTRACT,
+    methodName: "approve_measurements",
+    args: { measurements: ZEROS },
+    gas: GAS,
+  });
   console.log("Re-approved the all-zeros local-mode entry.");
   try {
-    await master.callFunction({ contractId: CONTRACT, methodName: "remove_measurements", args: { measurements: HYBRID }, gas: GAS });
+    await master.callFunction({
+      contractId: CONTRACT,
+      methodName: "remove_measurements",
+      args: { measurements: HYBRID },
+      gas: GAS,
+    });
     console.log("Removed the hybrid entry.");
   } catch (e) {
     console.log("Hybrid entry already absent (fine):", e instanceof Error ? e.message.slice(0, 120) : e);

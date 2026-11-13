@@ -1,13 +1,7 @@
 {
   "source": "http://127.0.0.1:4179",
   "capturedAt": "2026-11-13T16:34:52.787Z",
-  "available": [
-    "landing",
-    "directory",
-    "mandate-pass",
-    "mandate-fail",
-    "keycheck"
-  ],
+  "available": ["landing", "directory", "mandate-pass", "mandate-fail", "keycheck"],
   "durations": {
     "landing": 13.633333,
     "directory": 9.533333,

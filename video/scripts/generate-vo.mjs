@@ -47,14 +47,22 @@ function speak(voiceId, text, dest) {
     voice_settings: { stability: 0.45, similarity_boost: 0.75, style: 0.1, use_speaker_boost: true },
   });
   const out = curl([
-    "-X", "POST",
-    "-H", "content-type: application/json",
-    "-H", "accept: audio/mpeg",
-    "--data-binary", body,
-    "-w", "%{http_code}",
-    "-o", dest,
+    "-X",
+    "POST",
+    "-H",
+    "content-type: application/json",
+    "-H",
+    "accept: audio/mpeg",
+    "--data-binary",
+    body,
+    "-w",
+    "%{http_code}",
+    "-o",
+    dest,
     `${API}/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-  ]).toString().trim();
+  ])
+    .toString()
+    .trim();
   if (out !== "200") {
     const detail = existsSync(dest) ? readFileSync(dest, "utf8").slice(0, 300) : "";
     throw new Error(`HTTP ${out} ${detail}`);

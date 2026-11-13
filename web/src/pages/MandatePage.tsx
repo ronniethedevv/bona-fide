@@ -10,13 +10,10 @@ import { useAsync } from "../hooks/useAsync.js";
 
 export function MandatePage() {
   const { id = "" } = useParams();
-  const state = useAsync<{ mandate: Mandate | null; verdicts: EpochVerdict[] }>(
-    async () => {
-      const [mandate, verdicts] = await Promise.all([api.getMandate(id), api.getVerdicts(id)]);
-      return { mandate, verdicts };
-    },
-    [id],
-  );
+  const state = useAsync<{ mandate: Mandate | null; verdicts: EpochVerdict[] }>(async () => {
+    const [mandate, verdicts] = await Promise.all([api.getMandate(id), api.getVerdicts(id)]);
+    return { mandate, verdicts };
+  }, [id]);
   const [selected, setSelected] = useState<EpochVerdict | null>(null);
 
   const exit = <BackLink to="/directory" label="All market makers" />;
@@ -62,8 +59,12 @@ export function MandatePage() {
           <dd className="mono">
             <Link to={`/mm/${m.mm}`}>{m.mm}</Link>
             {m.account_verified && (
-              <span className="verified" title="The attested agent confirmed this MM controls the committed exchange account. The account id is never revealed.">
-                {" "}✓ verified account
+              <span
+                className="verified"
+                title="The attested agent confirmed this MM controls the committed exchange account. The account id is never revealed."
+              >
+                {" "}
+                ✓ verified account
               </span>
             )}
           </dd>
@@ -71,7 +72,10 @@ export function MandatePage() {
           <dd className="mono">
             {m.project}
             {m.project === m.mm && (
-              <div className="caveat" title="The same account proposed this mandate and co-signed it, so no independent party vouched for these terms.">
+              <div
+                className="caveat"
+                title="The same account proposed this mandate and co-signed it, so no independent party vouched for these terms."
+              >
                 same account on both sides — no independent counterparty
               </div>
             )}
@@ -83,7 +87,9 @@ export function MandatePage() {
           <dt>Max spread</dt>
           <dd>{bps(m.max_spread_bps)}</dd>
           <dt>Min depth / side</dt>
-          <dd>{formatQuote(m.min_depth_per_side_quote)} quote (±{m.depth_band_bps / 100}%)</dd>
+          <dd>
+            {formatQuote(m.min_depth_per_side_quote)} quote (±{m.depth_band_bps / 100}%)
+          </dd>
           <dt>Min uptime</dt>
           <dd>{bpsToPercent(m.min_uptime_bps)}</dd>
           <dt>Loan cap / epoch</dt>
@@ -104,7 +110,11 @@ export function MandatePage() {
 
         <div>
           <div className="actions">
-            {m.status === "Proposed" && <Link to={`/mandate/${m.id}/cosign`} className="btn">Co-sign</Link>}
+            {m.status === "Proposed" && (
+              <Link to={`/mandate/${m.id}/cosign`} className="btn">
+                Co-sign
+              </Link>
+            )}
             <Link to={`/mandate/${m.id}/key`} className="btn btn-ghost">
               Connect key
             </Link>

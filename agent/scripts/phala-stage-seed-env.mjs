@@ -47,20 +47,33 @@ async function api(path, init = {}) {
         headers: { "X-API-Key": key, "Content-Type": "application/json", ...(init.headers ?? {}) },
       });
       const text = await res.text();
-      if (res.status === 404 && !base) { lastErr = new Error(`404 at ${h}${path}`); continue; }
+      if (res.status === 404 && !base) {
+        lastErr = new Error(`404 at ${h}${path}`);
+        continue;
+      }
       base = h;
       let json;
-      try { json = JSON.parse(text); } catch { json = text; }
-      if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} -> ${res.status}: ${typeof json === "string" ? json.slice(0, 300) : JSON.stringify(json).slice(0, 300)}`);
+      try {
+        json = JSON.parse(text);
+      } catch {
+        json = text;
+      }
+      if (!res.ok)
+        throw new Error(
+          `${init.method ?? "GET"} ${path} -> ${res.status}: ${typeof json === "string" ? json.slice(0, 300) : JSON.stringify(json).slice(0, 300)}`,
+        );
       return json;
-    } catch (e) { lastErr = e; }
+    } catch (e) {
+      lastErr = e;
+    }
   }
   throw lastErr;
 }
 
 /** Find the docker compose YAML anywhere in a JSON blob; returns {path, yaml}. */
 function findCompose(obj, path = "") {
-  if (typeof obj === "string") return obj.includes("services:") && obj.includes(":") ? { path, yaml: obj } : null;
+  if (typeof obj === "string")
+    return obj.includes("services:") && obj.includes(":") ? { path, yaml: obj } : null;
   if (obj && typeof obj === "object") {
     for (const [k, v] of Object.entries(obj)) {
       const hit = findCompose(v, path ? `${path}.${k}` : k);
@@ -92,13 +105,21 @@ async function approvedMeasurements() {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      jsonrpc: "2.0", id: 1, method: "query",
-      params: { request_type: "call_function", finality: "final", account_id: CONTRACT,
-                method_name: "get_approved_measurements", args_base64: Buffer.from("{}").toString("base64") },
+      jsonrpc: "2.0",
+      id: 1,
+      method: "query",
+      params: {
+        request_type: "call_function",
+        finality: "final",
+        account_id: CONTRACT,
+        method_name: "get_approved_measurements",
+        args_base64: Buffer.from("{}").toString("base64"),
+      },
     }),
   });
   const json = await res.json();
-  if (!json.result?.result) throw new Error(`get_approved_measurements failed: ${JSON.stringify(json.error ?? json).slice(0, 200)}`);
+  if (!json.result?.result)
+    throw new Error(`get_approved_measurements failed: ${JSON.stringify(json.error ?? json).slice(0, 200)}`);
   return JSON.parse(Buffer.from(json.result.result).toString());
 }
 
@@ -107,18 +128,25 @@ const main = async () => {
   console.log(`Contract: ${CONTRACT}\n`);
 
   let detail;
-  try { detail = await api(`/cvms/${CVM_ID}/compose`); }
-  catch { detail = await api(`/cvms/${CVM_ID}`); }
+  try {
+    detail = await api(`/cvms/${CVM_ID}/compose`);
+  } catch {
+    detail = await api(`/cvms/${CVM_ID}`);
+  }
 
   const found = findCompose(detail);
-  if (!found) throw new Error(`No compose YAML found in the API response. Keys: ${Object.keys(detail).join(", ")}`);
+  if (!found)
+    throw new Error(`No compose YAML found in the API response. Keys: ${Object.keys(detail).join(", ")}`);
   console.log(`--- current compose (from ${found.path}) ---\n${found.yaml}\n`);
 
   const { yaml: nextYaml, changed } = withSeedEnabled(found.yaml);
   if (!changed) console.log("SEED_ENABLED is already in the compose — nothing to stage.\n");
   else {
     console.log(`--- staging this compose ---\n${nextYaml}\n`);
-    await api(`/cvms/${CVM_ID}/draft`, { method: "PATCH", body: JSON.stringify({ docker_compose_file: nextYaml }) });
+    await api(`/cvms/${CVM_ID}/draft`, {
+      method: "PATCH",
+      body: JSON.stringify({ docker_compose_file: nextYaml }),
+    });
     console.log("Staged (the CVM was NOT restarted).\n");
   }
 
@@ -134,7 +162,9 @@ const main = async () => {
   const [m] = await approvedMeasurements();
   const { mrtd, rtmr0, rtmr1, rtmr2 } = m.rtmrs;
   console.log("Run this next (approves the new hash on NEAR, keeping the enclave's own rtmrs):\n");
-  console.log(`npx tsx scripts/fix-measurements.ts ${mrtd} ${rtmr0} ${rtmr1} ${rtmr2} ${m.key_provider_event_digest} ${previewHash}\n`);
+  console.log(
+    `npx tsx scripts/fix-measurements.ts ${mrtd} ${rtmr0} ${rtmr1} ${rtmr2} ${m.key_provider_event_digest} ${previewHash}\n`,
+  );
 
   if (APPLY) {
     await api(`/cvms/${CVM_ID}/draft/apply`, { method: "POST", body: JSON.stringify({}) });
@@ -144,4 +174,7 @@ const main = async () => {
   }
 };
 
-main().catch((e) => { console.error("\nFAILED:", e instanceof Error ? e.message : e); process.exit(1); });
+main().catch((e) => {
+  console.error("\nFAILED:", e instanceof Error ? e.message : e);
+  process.exit(1);
+});

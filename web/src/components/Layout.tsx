@@ -23,11 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </Link>
           <nav className="topnav">
             {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => (isActive ? "is-active" : "")}
-              >
+              <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "is-active" : "")}>
                 {item.label}
               </NavLink>
             ))}
@@ -73,11 +69,7 @@ export function Layout({ children }: { children: ReactNode }) {
             Evidence
           </a>
           {CONTRACT_ID && (
-            <a
-              href={`https://testnet.nearblocks.io/address/${CONTRACT_ID}`}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href={`https://testnet.nearblocks.io/address/${CONTRACT_ID}`} target="_blank" rel="noreferrer">
               Contract
             </a>
           )}

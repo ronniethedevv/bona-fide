@@ -66,9 +66,15 @@ async function view<T>(method: string, args: Record<string, unknown> = {}): Prom
   return JSON.parse(Buffer.from(result).toString("utf8")) as T;
 }
 
-interface Mandate { id: string; mm: string; status: string; account_verified?: boolean }
+interface Mandate {
+  id: string;
+  mm: string;
+  status: string;
+  account_verified?: boolean;
+}
 
-const near = (yocto: string | bigint) => (Number(BigInt(yocto) / BigInt("10000000000000000000000")) / 100).toFixed(2);
+const near = (yocto: string | bigint) =>
+  (Number(BigInt(yocto) / BigInt("10000000000000000000000")) / 100).toFixed(2);
 
 /** Read the whole record so it can be compared before and after. */
 async function snapshot(): Promise<{ mandates: Mandate[]; verdicts: number[]; agents: number }> {
@@ -83,7 +89,9 @@ async function snapshot(): Promise<{ mandates: Mandate[]; verdicts: number[]; ag
 async function main(): Promise<void> {
   const wasmPath = path.resolve(process.cwd(), wasmArg ?? DEFAULT_WASM);
   if (!existsSync(wasmPath))
-    throw new Error(`No wasm at ${wasmPath}. Pass --wasm <path>, or see contract/out/README.md for how to build one.`);
+    throw new Error(
+      `No wasm at ${wasmPath}. Pass --wasm <path>, or see contract/out/README.md for how to build one.`,
+    );
   const code = readFileSync(wasmPath);
   const codeSha = createHash("sha256").update(code).digest("hex");
 
@@ -107,15 +115,21 @@ async function main(): Promise<void> {
   // account can stake fails the whole transaction, so check before spending gas.
   const storageDelta = BigInt(code.length - account.storage_usage) * BigInt("10000000000000000000");
   if (storageDelta > 0n) {
-    console.log(`Storage    +${near(storageDelta)} NEAR to stake (code grows by ${code.length - account.storage_usage} bytes)`);
+    console.log(
+      `Storage    +${near(storageDelta)} NEAR to stake (code grows by ${code.length - account.storage_usage} bytes)`,
+    );
     if (BigInt(account.amount) < storageDelta * 2n)
       throw new Error(`${contractId} needs more balance to stake the larger code. Fund it, then re-run.`);
   } else {
-    console.log(`Storage    code shrinks by ${account.storage_usage - code.length} bytes — no extra stake needed`);
+    console.log(
+      `Storage    code shrinks by ${account.storage_usage - code.length} bytes — no extra stake needed`,
+    );
   }
 
   const before = await snapshot();
-  console.log(`\nRecord now: ${before.mandates.length} mandate(s), ${before.verdicts.reduce((a, b) => a + b, 0)} verdict(s), ${before.agents} agent(s)`);
+  console.log(
+    `\nRecord now: ${before.mandates.length} mandate(s), ${before.verdicts.reduce((a, b) => a + b, 0)} verdict(s), ${before.agents} agent(s)`,
+  );
 
   // The migration reads every mandate as the OLD layout, so it must not run on
   // a contract that already carries the new fields — that would read past them
@@ -131,7 +145,9 @@ async function main(): Promise<void> {
   for (const m of before.mandates) console.log(`  #${m.id} ${m.mm} ${m.status}`);
 
   if (!SEND) {
-    console.log(`\nWould call update_contract on ${contractId}: deploy ${code.length} bytes, then migrate with ${MIGRATE_TGAS} TGas.`);
+    console.log(
+      `\nWould call update_contract on ${contractId}: deploy ${code.length} bytes, then migrate with ${MIGRATE_TGAS} TGas.`,
+    );
     console.log("Dry run — nothing was broadcast. Re-run with --send to do it for real.");
     return;
   }
@@ -158,8 +174,11 @@ async function main(): Promise<void> {
   const after = await snapshot();
   const verdictsBefore = before.verdicts.reduce((a, b) => a + b, 0);
   const verdictsAfter = after.verdicts.reduce((a, b) => a + b, 0);
-  console.log(`\nRecord after: ${after.mandates.length} mandate(s), ${verdictsAfter} verdict(s), ${after.agents} agent(s)`);
-  for (const m of after.mandates) console.log(`  #${m.id} ${m.mm} ${m.status} account_verified=${m.account_verified}`);
+  console.log(
+    `\nRecord after: ${after.mandates.length} mandate(s), ${verdictsAfter} verdict(s), ${after.agents} agent(s)`,
+  );
+  for (const m of after.mandates)
+    console.log(`  #${m.id} ${m.mm} ${m.status} account_verified=${m.account_verified}`);
 
   const ok =
     after.mandates.length === before.mandates.length &&
@@ -171,7 +190,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   console.log("\nMigrated. Every mandate and verdict survived, and identity binding is now live:");
-  console.log("  an attested agent can call attest_account_binding, and the app will show a verified mandate.");
+  console.log(
+    "  an attested agent can call attest_account_binding, and the app will show a verified mandate.",
+  );
   console.log("\nRe-capture the evidence bundle: CONTRACT_ID=" + contractId + " npm run evidence");
 }
 

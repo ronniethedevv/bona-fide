@@ -1,0 +1,15 @@
+# Generated, vendored, or not ours to reformat.
+node_modules/
+**/node_modules/
+**/dist/
+contract/target/
+video/out/
+video/public/
+
+# Chain state, written by scripts and compared with `git diff` — reformatting
+# it would make every evidence capture look like a change.
+evidence/
+
+# Prose is hand-wrapped for readability and reviewed as diffs; letting a
+# formatter reflow it turns a one-word edit into a rewritten paragraph.
+*.md
