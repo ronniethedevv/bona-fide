@@ -8,6 +8,7 @@ const NAV = [
   { to: "/new", label: "New mandate" },
   { to: "/for-projects", label: "For projects" },
   { to: "/key-check", label: "Key check" },
+  { to: "/docs", label: "Docs" },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
