@@ -110,7 +110,9 @@ async function main(): Promise<void> {
   try {
     save("whitelisted-agents", await view("get_whitelisted_agents_for_local", {}));
   } catch (e) {
-    console.log(`  (whitelisted-agents skipped: ${e instanceof Error ? e.message.slice(0, 120) : String(e)})`);
+    console.log(
+      `  (whitelisted-agents skipped: ${e instanceof Error ? e.message.slice(0, 120) : String(e)})`,
+    );
   }
   const mandates = await view("list_mandates", {});
   save("mandates", mandates);

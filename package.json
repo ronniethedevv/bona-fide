@@ -7,8 +7,13 @@
   "scripts": {
     "demo:replay": "npm --prefix agent run demo:replay",
     "evidence": "npm --prefix agent run evidence",
+    "build:web": "npm --prefix web run build",
     "test:agent": "npm --prefix agent test",
     "test:contract": "cd contract && cargo test",
-    "build:web": "npm --prefix web run build"
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }

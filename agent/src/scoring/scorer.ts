@@ -68,12 +68,7 @@ function median(values: number[]): number {
  * Returns 0 when either balance is absent (check disabled) or the shortfall is
  * within the fee tolerance.
  */
-function unexplainedOutflow(
-  epoch: EpochData,
-  buys: Decimal,
-  sells: Decimal,
-  withdrawals: Decimal,
-): Decimal {
+function unexplainedOutflow(epoch: EpochData, buys: Decimal, sells: Decimal, withdrawals: Decimal): Decimal {
   if (epoch.startBaseBalance === undefined || epoch.endBaseBalance === undefined) {
     return new Decimal(0);
   }
@@ -128,9 +123,7 @@ export function scoreEpoch(terms: ScoringTerms, epoch: EpochData): EpochScore {
     minAskDepth = minAskDepth === null ? askDepth : Decimal.min(minAskDepth, askDepth);
 
     const ok =
-      spreadBps <= terms.maxSpreadBps &&
-      bidDepth.gte(minDepthScaled) &&
-      askDepth.gte(minDepthScaled);
+      spreadBps <= terms.maxSpreadBps && bidDepth.gte(minDepthScaled) && askDepth.gte(minDepthScaled);
     if (ok) okCount += 1;
   }
 

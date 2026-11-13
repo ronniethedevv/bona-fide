@@ -56,9 +56,9 @@ export function Directory() {
 
       {/* Say plainly what being listed here does and does not mean. */}
       <p className="notice">
-        An account appears here once an <strong>allowlisted project co-signed an engagement</strong> with
-        it. That is a counterparty vouching for a deal — it is <strong>not</strong> an identity check, and
-        anyone may propose a mandate naming themselves as the market maker.
+        An account appears here once an <strong>allowlisted project co-signed an engagement</strong> with it.
+        That is a counterparty vouching for a deal — it is <strong>not</strong> an identity check, and anyone
+        may propose a mandate naming themselves as the market maker.
       </p>
 
       {loading && <p className="muted">Loading…</p>}
@@ -88,7 +88,10 @@ export function Directory() {
                   <td className="mono">
                     {vouchers.length === 0 ? <span className="muted">—</span> : vouchers.join(", ")}
                     {selfCosigned && (
-                      <div className="caveat" title="A mandate names this account as both the market maker and the project, so no independent party vouched for it.">
+                      <div
+                        className="caveat"
+                        title="A mandate names this account as both the market maker and the project, so no independent party vouched for it."
+                      >
                         self-co-signed
                       </div>
                     )}

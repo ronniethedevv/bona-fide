@@ -12,16 +12,16 @@ function pct(n: number, total: number): string {
 
 export function MmProfile() {
   const { account = "" } = useParams();
-  const state = useAsync<{ summary: MmSummary | null; mandates: Mandate[] }>(
-    async () => {
-      const [summary, mandates] = await Promise.all([api.getMmSummary(account), api.listMandates()]);
-      return { summary, mandates: mandates.filter((m) => m.mm === account) };
-    },
-    [account],
-  );
+  const state = useAsync<{ summary: MmSummary | null; mandates: Mandate[] }>(async () => {
+    const [summary, mandates] = await Promise.all([api.getMmSummary(account), api.listMandates()]);
+    return { summary, mandates: mandates.filter((m) => m.mm === account) };
+  }, [account]);
 
   const total = state.data?.summary
-    ? state.data.summary.pass + state.data.summary.fail + state.data.summary.missed + state.data.summary.outage
+    ? state.data.summary.pass +
+      state.data.summary.fail +
+      state.data.summary.missed +
+      state.data.summary.outage
     : 0;
   const s = state.data?.summary;
 

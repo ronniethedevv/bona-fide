@@ -10,18 +10,8 @@
  */
 import { Decimal } from "decimal.js";
 import { z } from "zod";
-import {
-  BinanceReadOnlyClient,
-  type BinanceCredential,
-  ExchangeError,
-} from "../exchange/binance.js";
-import {
-  type DataSourceKind,
-  type Sample,
-  SourceAuthError,
-  type Trade,
-  type Withdrawal,
-} from "./types.js";
+import { BinanceReadOnlyClient, type BinanceCredential, ExchangeError } from "../exchange/binance.js";
+import { type DataSourceKind, type Sample, SourceAuthError, type Trade, type Withdrawal } from "./types.js";
 
 // Documented Binance Spot response shapes (only the fields we read).
 const DepthSchema = z.object({

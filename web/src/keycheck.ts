@@ -49,6 +49,10 @@ export interface CannedKey {
 
 export const CANNED_KEYS: CannedKey[] = [
   { id: "read", label: "Read-only key (good)", restrictions: READ_ONLY },
-  { id: "trade", label: "Trade-enabled key", restrictions: { ...READ_ONLY, enableSpotAndMarginTrading: true } },
+  {
+    id: "trade",
+    label: "Trade-enabled key",
+    restrictions: { ...READ_ONLY, enableSpotAndMarginTrading: true },
+  },
   { id: "withdraw", label: "Withdraw-enabled key", restrictions: { ...READ_ONLY, enableWithdrawals: true } },
 ];

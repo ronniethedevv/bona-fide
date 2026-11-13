@@ -2,11 +2,7 @@ import { createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import {
-  BinanceReadOnlyClient,
-  ExchangeError,
-  type Transport,
-} from "../src/exchange/binance.js";
+import { BinanceReadOnlyClient, ExchangeError, type Transport } from "../src/exchange/binance.js";
 
 const CRED = { apiKey: "KEY123", apiSecret: "SECRET456" };
 

@@ -130,7 +130,10 @@ app.post("/api/intake", async (c) => {
       }
       await agentClient.call({
         methodName: "attest_account_binding",
-        args: { mandate_id: String(payload.mandate_id), account_tag: accountTag(fpKey, uidStr, payload.mandate_id) },
+        args: {
+          mandate_id: String(payload.mandate_id),
+          account_tag: accountTag(fpKey, uidStr, payload.mandate_id),
+        },
         gas: SUBMIT_GAS,
       });
       verified = true;
@@ -162,14 +165,21 @@ function isTransientRpcError(e: unknown): boolean {
 }
 
 /** Retry an RPC-backed call through transient network failures with a fixed backoff. */
-async function withRpcRetry<T>(label: string, fn: () => Promise<T>, attempts = 40, delayMs = 5_000): Promise<T> {
+async function withRpcRetry<T>(
+  label: string,
+  fn: () => Promise<T>,
+  attempts = 40,
+  delayMs = 5_000,
+): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
     } catch (e) {
       if (!isTransientRpcError(e) || attempt >= attempts) throw e;
       // eslint-disable-next-line no-console
-      console.log(`${label}: transient RPC error (attempt ${attempt}/${attempts}), retrying in ${delayMs / 1000}s`);
+      console.log(
+        `${label}: transient RPC error (attempt ${attempt}/${attempts}), retrying in ${delayMs / 1000}s`,
+      );
       await sleep(delayMs);
     }
   }

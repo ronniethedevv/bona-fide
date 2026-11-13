@@ -74,7 +74,10 @@ describe("I3 — canary never leaks", () => {
 
     let thrownString = "";
     try {
-      const failing: Transport = async () => ({ status: 401, body: '{"code":-2015,"msg":"Invalid API-key"}' });
+      const failing: Transport = async () => ({
+        status: 401,
+        body: '{"code":-2015,"msg":"Invalid API-key"}',
+      });
       const client = new BinanceReadOnlyClient({ transport: failing, now: () => 1 });
       try {
         await client.getApiRestrictions({ apiKey: payload.api_key, apiSecret: payload.api_secret });

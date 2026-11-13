@@ -26,7 +26,9 @@ if (!existsSync(VO)) {
   process.exit(0);
 }
 
-const files = readdirSync(VO).filter((f) => /\.(mp3|wav|m4a)$/i.test(f)).sort();
+const files = readdirSync(VO)
+  .filter((f) => /\.(mp3|wav|m4a)$/i.test(f))
+  .sort();
 if (files.length === 0) {
   console.log("no voiceover clips in public/vo — scenes will use their planned lengths");
 }
@@ -37,7 +39,17 @@ for (const file of files) {
   try {
     execFileSync(
       FFMPEG,
-      ["-hide_banner", "-nostats", "-i", join(VO, file), "-af", `silencedetect=noise=${NOISE_DB}:d=${MIN_GAP}`, "-f", "null", "-"],
+      [
+        "-hide_banner",
+        "-nostats",
+        "-i",
+        join(VO, file),
+        "-af",
+        `silencedetect=noise=${NOISE_DB}:d=${MIN_GAP}`,
+        "-f",
+        "null",
+        "-",
+      ],
       { stdio: ["ignore", "ignore", "pipe"] },
     );
   } catch (e) {
@@ -46,10 +58,10 @@ for (const file of files) {
   // ffmpeg writes silencedetect results to stderr even on success
   if (!log) {
     try {
-      log = execFileSync(
-        "sh",
-        ["-c", `${FFMPEG} -hide_banner -nostats -i '${join(VO, file)}' -af silencedetect=noise=${NOISE_DB}:d=${MIN_GAP} -f null - 2>&1`],
-      ).toString();
+      log = execFileSync("sh", [
+        "-c",
+        `${FFMPEG} -hide_banner -nostats -i '${join(VO, file)}' -af silencedetect=noise=${NOISE_DB}:d=${MIN_GAP} -f null - 2>&1`,
+      ]).toString();
     } catch (e) {
       log = String(e.stdout ?? "");
     }

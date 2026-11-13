@@ -31,7 +31,9 @@ async function main(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`    trade key       → ${r.tradeKey.ok ? "accepted" : `REJECTED (${r.tradeKey.reason})`}`);
   // eslint-disable-next-line no-console
-  console.log(`    withdraw key    → ${r.withdrawKey.ok ? "accepted" : `REJECTED (${r.withdrawKey.reason})`}`);
+  console.log(
+    `    withdraw key    → ${r.withdrawKey.ok ? "accepted" : `REJECTED (${r.withdrawKey.reason})`}`,
+  );
   // eslint-disable-next-line no-console
   console.log("\n  To record these on testnet, deploy the contract (see DEPLOY.md) and run with env set.\n");
 }

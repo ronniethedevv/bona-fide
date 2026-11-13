@@ -71,7 +71,11 @@ describe("sampleEpochLive (P3.3)", () => {
       fetchWithdrawals: vi.fn().mockResolvedValue([]),
     };
     const sleep = vi.fn().mockResolvedValue(undefined);
-    const data = await sampleEpochLive(market as never, { expectedSamples: 3, sampleSecs: 30, window }, { sleep });
+    const data = await sampleEpochLive(
+      market as never,
+      { expectedSamples: 3, sampleSecs: 30, window },
+      { sleep },
+    );
     expect(data.samples).toHaveLength(3);
     expect(sleep).toHaveBeenCalledTimes(2); // no sleep after the last sample
     expect(data.trades).toHaveLength(1);
@@ -89,9 +93,13 @@ describe("sampleEpochLive (P3.3)", () => {
       fetchTrades: vi.fn().mockResolvedValue([]),
       fetchWithdrawals: vi.fn().mockResolvedValue([]),
     };
-    const data = await sampleEpochLive(market as never, { expectedSamples: 3, sampleSecs: 1, window }, {
-      sleep: async () => {},
-    });
+    const data = await sampleEpochLive(
+      market as never,
+      { expectedSamples: 3, sampleSecs: 1, window },
+      {
+        sleep: async () => {},
+      },
+    );
     expect(data.samples).toHaveLength(2);
     expect(data.serverErrors).toBe(true);
   });
@@ -104,7 +112,11 @@ describe("sampleEpochLive (P3.3)", () => {
       fetchWithdrawals: vi.fn(),
     };
     await expect(
-      sampleEpochLive(market as never, { expectedSamples: 2, sampleSecs: 1, window }, { sleep: async () => {} }),
+      sampleEpochLive(
+        market as never,
+        { expectedSamples: 2, sampleSecs: 1, window },
+        { sleep: async () => {} },
+      ),
     ).rejects.toBeInstanceOf(SourceAuthError);
   });
 });

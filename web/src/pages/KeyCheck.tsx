@@ -27,7 +27,14 @@ export function KeyCheck() {
       <div className="form form-narrow">
         <label className="field">
           <span>Pretend the exchange says this key is…</span>
-          <select className="search" value={id} onChange={(e) => { setId(e.target.value); setResult(null); }}>
+          <select
+            className="search"
+            value={id}
+            onChange={(e) => {
+              setId(e.target.value);
+              setResult(null);
+            }}
+          >
             {CANNED_KEYS.map((k) => (
               <option key={k.id} value={k.id}>
                 {k.label}

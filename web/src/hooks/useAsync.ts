@@ -15,8 +15,10 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[]): AsyncSta
     setState({ loading: true, error: null, data: null });
     loader()
       .then((data) => active && setState({ loading: false, error: null, data }))
-      .catch((e: unknown) =>
-        active && setState({ loading: false, error: e instanceof Error ? e.message : String(e), data: null }),
+      .catch(
+        (e: unknown) =>
+          active &&
+          setState({ loading: false, error: e instanceof Error ? e.message : String(e), data: null }),
       );
     return () => {
       active = false;

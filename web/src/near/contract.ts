@@ -26,21 +26,15 @@ export async function view<T>(methodName: string, args: Record<string, unknown> 
 }
 
 export const api = {
-  listMms: (from = 0, limit = 100) =>
-    view<MmListing[]>("list_mms", { from_index: from, limit }),
-  getMmSummary: (account_id: string) =>
-    view<MmSummary | null>("get_mm_summary", { account_id }),
-  listMandates: (from = 0, limit = 200) =>
-    view<Mandate[]>("list_mandates", { from_index: from, limit }),
+  listMms: (from = 0, limit = 100) => view<MmListing[]>("list_mms", { from_index: from, limit }),
+  getMmSummary: (account_id: string) => view<MmSummary | null>("get_mm_summary", { account_id }),
+  listMandates: (from = 0, limit = 200) => view<Mandate[]>("list_mandates", { from_index: from, limit }),
   getMandate: (id: string) => view<Mandate | null>("get_mandate", { id }),
   getVerdicts: (id: string, from_epoch = 0, limit = 500) =>
     view<EpochVerdict[]>("get_verdicts", { id, from_epoch, limit }),
-  getAgentPubkey: (account_id: string) =>
-    view<string | null>("get_agent_pubkey", { account_id }),
-  listAgents: (from = 0, limit = 50) =>
-    view<AgentView[]>("get_agents", { from_index: from, limit }),
-  isProjectAllowlisted: (account_id: string) =>
-    view<boolean>("is_project_allowlisted", { account_id }),
+  getAgentPubkey: (account_id: string) => view<string | null>("get_agent_pubkey", { account_id }),
+  listAgents: (from = 0, limit = 50) => view<AgentView[]>("get_agents", { from_index: from, limit }),
+  isProjectAllowlisted: (account_id: string) => view<boolean>("is_project_allowlisted", { account_id }),
 };
 
 /**

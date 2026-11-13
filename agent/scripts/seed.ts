@@ -56,11 +56,17 @@ async function runReplayOnAgent(mandateId: string, fixture: string): Promise<voi
   });
   const body = (await res.json()) as { submitted?: number; statuses?: string[]; error?: string };
   if (!res.ok || body.error) throw new Error(`agent run-replay failed: ${body.error ?? res.status}`);
-  console.log(`  mandate ${mandateId} (${fixture}) → ${body.submitted} verdict(s): ${body.statuses?.join(", ")}`);
+  console.log(
+    `  mandate ${mandateId} (${fixture}) → ${body.submitted} verdict(s): ${body.statuses?.join(", ")}`,
+  );
 }
 
 async function main(): Promise<void> {
-  const master = new Account(masterId, new JsonRpcProvider({ url: RPC }), new KeyPairSigner(KeyPair.fromString(privateKey as `ed25519:${string}`)));
+  const master = new Account(
+    masterId,
+    new JsonRpcProvider({ url: RPC }),
+    new KeyPairSigner(KeyPair.fromString(privateKey as `ed25519:${string}`)),
+  );
   const call = (methodName: string, args: Record<string, unknown>) =>
     master.callFunction({ contractId, methodName, args, gas: GAS });
 
@@ -68,11 +74,21 @@ async function main(): Promise<void> {
   await call("set_project_allowlisted", { account_id: masterId, allowed: true });
 
   console.log("Proposing + co-signing the honest mandate…");
-  const honestId = (await master.callFunction<string>({ contractId, methodName: "propose_mandate", args: { terms: terms("mm-honest") }, gas: GAS }));
+  const honestId = await master.callFunction<string>({
+    contractId,
+    methodName: "propose_mandate",
+    args: { terms: terms("mm-honest") },
+    gas: GAS,
+  });
   await call("cosign_mandate", { id: honestId });
 
   console.log("Proposing + co-signing the dumping mandate…");
-  const dumpId = (await master.callFunction<string>({ contractId, methodName: "propose_mandate", args: { terms: terms("mm-dumping") }, gas: GAS }));
+  const dumpId = await master.callFunction<string>({
+    contractId,
+    methodName: "propose_mandate",
+    args: { terms: terms("mm-dumping") },
+    gas: GAS,
+  });
   await call("cosign_mandate", { id: dumpId });
 
   console.log("Scoring + submitting verdicts via the agent…");

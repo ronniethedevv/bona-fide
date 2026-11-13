@@ -6,7 +6,10 @@ import { AGENT_ID, AGENT_URL } from "../near/config.js";
 import { sealKey } from "../near/sealbox.js";
 import { useAsync } from "../hooks/useAsync.js";
 
-type Result = { kind: "accepted" } | { kind: "rejected"; reason: string } | { kind: "error"; message: string };
+type Result =
+  | { kind: "accepted" }
+  | { kind: "rejected"; reason: string }
+  | { kind: "error"; message: string };
 
 const REASON_TEXT: Record<string, string> = {
   TRADE_ENABLED: "This key can trade. Create a read-only key.",
@@ -67,8 +70,8 @@ export function ConnectKey() {
       )}
       {!pubkey.loading && !pubkey.data && (
         <p className="notice notice-status">
-          No attested agent has published an enclave key on this deployment yet, so a key cannot be sealed
-          to one.
+          No attested agent has published an enclave key on this deployment yet, so a key cannot be sealed to
+          one.
         </p>
       )}
 
@@ -101,12 +104,15 @@ export function ConnectKey() {
         </form>
       )}
 
-      {result?.kind === "accepted" && <p className="ok">Accepted — the key is read-only and now held in the enclave.</p>}
+      {result?.kind === "accepted" && (
+        <p className="ok">Accepted — the key is read-only and now held in the enclave.</p>
+      )}
       {result?.kind === "rejected" && (
-        <p className="error">Rejected ({result.reason}): {REASON_TEXT[result.reason] ?? "Not a read-only key."}</p>
+        <p className="error">
+          Rejected ({result.reason}): {REASON_TEXT[result.reason] ?? "Not a read-only key."}
+        </p>
       )}
       {result?.kind === "error" && <p className="error">Submission failed: {result.message}</p>}
-
     </section>
   );
 }

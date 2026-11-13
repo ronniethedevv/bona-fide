@@ -11,14 +11,11 @@ export function Cosign() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const { accountId, signIn, call } = useWallet();
-  const state = useAsync<{ mandate: Mandate | null; allowlisted: boolean }>(
-    async () => {
-      const mandate = await api.getMandate(id);
-      const allowlisted = mandate ? await api.isProjectAllowlisted(mandate.project) : false;
-      return { mandate, allowlisted };
-    },
-    [id],
-  );
+  const state = useAsync<{ mandate: Mandate | null; allowlisted: boolean }>(async () => {
+    const mandate = await api.getMandate(id);
+    const allowlisted = mandate ? await api.isProjectAllowlisted(mandate.project) : false;
+    return { mandate, allowlisted };
+  }, [id]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -92,7 +89,9 @@ export function Cosign() {
         </button>
       )}
       {accountId && !isProject && (
-        <p className="error">Connected as {accountId}; only the named project ({m.project}) can co-sign.</p>
+        <p className="error">
+          Connected as {accountId}; only the named project ({m.project}) can co-sign.
+        </p>
       )}
       {accountId && isProject && !state.data?.allowlisted && (
         <p className="error">This project is not allowlisted by the contract owner yet.</p>
