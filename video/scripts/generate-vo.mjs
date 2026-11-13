@@ -39,9 +39,27 @@ function pickVoice() {
   return voices[0];
 }
 
+/**
+ * Respellings applied to the TTS input only — never to vo-script.json, which
+ * stays the real text for anyone reading along.
+ *
+ * "BonaFide" is read by the model as the Latin phrase it comes from, giving
+ * "bona fee-day". The name is pronounced BOH-nuh-fyde, so the model is handed
+ * a spelling that gets there.
+ */
+const PRONUNCIATION = [
+  // Read as the Latin phrase the name comes from: "bona fee-day".
+  [/\bBonaFide\b/g, "Bonafyde"],
+  // Both uses in the script are the adjective (/laɪv/ — "live on testnet",
+  // "the live agent"), which the model otherwise reads as the verb.
+  [/\blive\b/g, "laiv"],
+];
+
+const forSpeech = (text) => PRONUNCIATION.reduce((t, [re, to]) => t.replace(re, to), text);
+
 function speak(voiceId, text, dest) {
   const body = JSON.stringify({
-    text,
+    text: forSpeech(text),
     model_id: MODEL,
     // Steady and deliberate: this is narration over data, not performance.
     voice_settings: { stability: 0.45, similarity_boost: 0.75, style: 0.1, use_speaker_boost: true },
@@ -76,7 +94,9 @@ const voice = pickVoice();
 console.log(`voice: ${voice.name} (${voice.voice_id})\nmodel: ${MODEL}\n`);
 
 let made = 0;
+const only = process.argv.slice(2);
 for (const [id, text] of Object.entries(script)) {
+  if (only.length && !only.includes(id)) continue;
   const dest = join(OUT, `${id}.mp3`);
   if (!FORCE && existsSync(dest)) {
     console.log(`  = ${id}.mp3 (exists)`);

@@ -27,6 +27,13 @@ A mandate becomes verified only when an attested agent that saw a working
 read-only key calls `attest_account_binding`. Nothing in the migration marks
 anything verified retroactively.
 
+The key has to come from a **production** exchange account. Binance Spot
+Testnet serves only `/api/*`; the read-only permission check is a `/sapi/*`
+call, so on testnet it cannot run and intake rejects the key. Skipping the
+check when the host does not offer it would have the enclave attest that a key
+is read-only without having verified it — the single claim this design exists
+to support — so the agent refuses instead, and a mandate stays unverified.
+
 ## Why it's possible here
 
 The enclave already holds the verified read-only key and is the only party that

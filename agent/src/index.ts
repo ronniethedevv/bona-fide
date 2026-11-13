@@ -37,11 +37,13 @@ let agentClient: ShadeClient | null = null;
 let fpKey: Buffer | null = null; // HMAC key for account fingerprints (TEE-derived)
 const keyStore = new KeyStore();
 const registry = new AccountRegistry();
-// EXCHANGE_BASE_URL points the read-only client at a different Binance host —
-// in practice the Spot Testnet (https://testnet.binance.vision), where an API
-// key can be created without a funded live account. The client is GET-only
-// whatever the host is; the base URL changes where requests go, never what the
-// agent is allowed to do.
+// EXCHANGE_BASE_URL points the read-only client at a different Binance host.
+// Note that Spot Testnet (https://testnet.binance.vision) serves only /api/*:
+// the read-only permission check is a /sapi/* call, so it cannot run there and
+// intake will reject the key rather than skip the check. Useful for exercising
+// signing and /api/v3/account; not a substitute for a production read-only key.
+// The client is GET-only whatever the host is; the base URL changes where
+// requests go, never what the agent is allowed to do.
 const exchange = new BinanceReadOnlyClient(
   process.env.EXCHANGE_BASE_URL ? { baseUrl: process.env.EXCHANGE_BASE_URL } : {},
 );

@@ -155,23 +155,35 @@ This is the one that lights up `account_verified`. It needs **a real read-only
 exchange key**, because the binding is the enclave attesting that it saw a
 working key for a specific account. Nothing fakes that.
 
-**Getting a key without a funded live account:** Binance Spot Testnet
-(<https://testnet.binance.vision/>) issues API keys on a GitHub login, no KYC.
-Set `EXCHANGE_BASE_URL=https://testnet.binance.vision` in `agent/.env`.
+**You need a production read-only key. There is no testnet substitute.**
 
-> **Check this first.** The read-only check calls
-> `GET /sapi/v1/account/apiRestrictions`. If the testnet host does not serve
-> that endpoint, intake rejects the key before it ever reaches the binding step,
-> and you need a real read-only key on `api.binance.com` instead. Test it in one
-> command before building anything on it:
->
-> ```bash
-> curl -s "https://testnet.binance.vision/sapi/v1/account/apiRestrictions" \
->   -H "X-MBX-APIKEY: <key>" | head -c 300
-> ```
->
-> A permissions JSON means go. A 404 or "Invalid path" means use a live
-> read-only key.
+Binance Spot Testnet (`testnet.binance.vision`) serves **only `/api/*`** — the
+entire `/sapi/*` namespace is absent, and Binance documents this explicitly.
+The read-only gate is `GET /sapi/v1/account/apiRestrictions`, so on testnet it
+cannot be called at all: intake rejects the key before it ever reaches the
+binding step. Spot Demo Mode has the same limitation.
+
+What testnet *is* good for, if you want to exercise the plumbing: the signing
+is identical (HMAC-SHA256 over the query string, `X-MBX-APIKEY`, `timestamp`,
+`recvWindow`), `GET /api/v3/account` does return a numeric `uid`, and keys
+default to no `TRADE` permission. So `EXCHANGE_BASE_URL` remains useful for
+testing everything except the one check that matters here.
+
+So Job B needs a key from a **production** Binance account:
+
+- A zero balance is fine — `apiRestrictions` only needs a valid key.
+- Create the key with **read permission only**: no spot/margin trading, no
+  withdrawals, no universal transfer. The agent re-checks this and rejects
+  anything else, but do not hand it a key that could trade.
+- Account creation requires KYC. If that is not something you want to do for a
+  hackathon demo, **skip Job B**. The record then keeps saying
+  `account_verified: false`, which is true, and the README says why.
+
+> **Do not loosen the check to make the demo work.** The obvious shortcut —
+> skipping `apiRestrictions` when the host does not serve it — would have the
+> enclave attest "this key is read-only" when it had verified no such thing.
+> That is the one claim this project exists to make. A dark badge is worth more
+> than a lit one that means nothing.
 
 With the agent from §3 still running:
 
