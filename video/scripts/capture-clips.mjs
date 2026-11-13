@@ -59,8 +59,9 @@ const CLIPS = [
   {
     // Long enough to carry the narration, and paced like someone reading.
     name: "landing",
+    url: "/",
+    ready: "h1",
     run: async (page) => {
-      await page.goto(BASE + "/", { waitUntil: "networkidle" });
       await settle(page, 2600);
       await glide(page, 520, 2400);
       await glide(page, 1180, 2400);
@@ -70,8 +71,9 @@ const CLIPS = [
   },
   {
     name: "directory",
+    url: "/directory",
+    ready: "table.table tbody tr",
     run: async (page) => {
-      await page.goto(BASE + "/directory", { waitUntil: "networkidle" });
       await settle(page, 2800);
       const row = page.locator("table.table tbody tr").first();
       if (await row.count()) {
@@ -93,8 +95,9 @@ const CLIPS = [
   },
   {
     name: "mandate-pass",
+    url: "/mandate/0",
+    ready: ".timeline .cell",
     run: async (page) => {
-      await page.goto(BASE + "/mandate/0", { waitUntil: "networkidle" });
       await settle(page, 2800);
       const cells = page.locator(".timeline .cell");
       const n = await cells.count();
@@ -111,8 +114,9 @@ const CLIPS = [
   },
   {
     name: "mandate-fail",
+    url: "/mandate/1",
+    ready: ".timeline .cell",
     run: async (page) => {
-      await page.goto(BASE + "/mandate/1", { waitUntil: "networkidle" });
       await settle(page, 3000);
       const cells = page.locator(".timeline .cell");
       if (await cells.count()) {
@@ -125,8 +129,9 @@ const CLIPS = [
   },
   {
     name: "keycheck",
+    url: "/key-check",
+    ready: "button",
     run: async (page) => {
-      await page.goto(BASE + "/key-check", { waitUntil: "networkidle" });
       await settle(page, 2400);
       const run = page.getByRole("button", { name: /run the check/i });
       await run.click(); // defaults to a trade-enabled key -> rejected
@@ -141,6 +146,21 @@ const CLIPS = [
     },
   },
 ];
+
+/**
+ * Open the clip's page and wait until it has really rendered.
+ *
+ * Deliberately done before the screencast starts. `networkidle` fires when the
+ * document's own requests go quiet, which is before the app's chain queries
+ * resolve, so recording from navigation puts a second of "Loading…" at the top
+ * of the shot. The demo is 100 seconds long; none of them should be a spinner.
+ */
+async function openReady(page, clip) {
+  if (!clip.url) return;
+  await page.goto(BASE + clip.url, { waitUntil: "networkidle" });
+  if (clip.ready) await page.locator(clip.ready).first().waitFor({ state: "visible", timeout: 20000 });
+  await page.waitForTimeout(250); // let the first paint settle before recording
+}
 
 /** Record one scripted flow to an mp4, preserving real-time pacing. */
 async function record(browser, clip) {
@@ -161,6 +181,8 @@ async function record(browser, clip) {
       /* session closed mid-flight */
     }
   });
+
+  await openReady(page, clip);
 
   await cdp.send("Page.startScreencast", {
     format: "jpeg",

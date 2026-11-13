@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BackLink } from "../components/BackLink.js";import { Link, useParams } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";
+import { useParams } from "react-router-dom";
 import { resolveEnclavePubkey } from "../near/contract.js";
 import { AGENT_ID, AGENT_URL } from "../near/config.js";
 import { sealKey } from "../near/sealbox.js";
@@ -108,9 +109,6 @@ export function ConnectKey() {
       )}
       {result?.kind === "error" && <p className="error">Submission failed: {result.message}</p>}
 
-      <p>
-        <Link to={`/mandate/${id}`}>← Back to mandate</Link>
-      </p>
     </section>
   );
 }

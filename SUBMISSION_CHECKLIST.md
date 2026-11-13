@@ -94,7 +94,7 @@ free trial credit.
 - [ ] **Delete the `context` branch** before submission (development scratch,
       guarded out of `main` by CI; it must not ship).
 - [ ] Final cold-judge pass: someone who has never seen the repo follows
-      "How to judge this fastest" and gets through steps 1–4 without help.
+      "How to check this without trusting us" and gets through steps 1–4 without help.
 - [ ] **Submit once**: print the full JSON payload, get an explicit yes from
       the team, POST to the applications API, keep the `requestId`. Mistakes
       afterwards go through

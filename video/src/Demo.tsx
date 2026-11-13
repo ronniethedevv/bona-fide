@@ -67,9 +67,13 @@ export function Demo({ scenes, music }: DemoProps) {
         <Audio
           src={staticFile(music)}
           loop
-          // Sits under the narration, and gets out of the way at both ends.
+          // Far under the narration, and out of the way at both ends.
+          // Measured, not guessed: the bed is -11.4 LUFS and the voiceover
+          // -24.0, so the music is already louder than the voice. 0.025 is
+          // about -32 dB, which puts it ~19 dB below the narration — present
+          // as texture, never competing with a word.
           volume={(f) =>
-            interpolate(f, [0, 45, total - 60, total], [0, 0.12, 0.12, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+            interpolate(f, [0, 45, total - 60, total], [0, 0.025, 0.025, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
           }
         />
       ) : null}

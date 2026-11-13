@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BackLink } from "../components/BackLink.js";import { Link, useNavigate, useParams } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../near/contract.js";
 import { bps, bpsToPercent, formatQuote, shortHash } from "../near/format.js";
 import type { Mandate } from "../near/types.js";
@@ -102,9 +103,6 @@ export function Cosign() {
           {busy ? "Signing…" : "Co-sign and activate"}
         </button>
       )}
-      <p>
-        <Link to={`/mandate/${m.id}`}>← Back to mandate</Link>
-      </p>
     </section>
   );
 }
