@@ -1219,3 +1219,14 @@ h3 {
   letter-spacing: 0.04em;
   color: var(--simulated);
 }
+
+/* Footnote inside an attestation record card — explains a state the card shows
+   (notably an aged-out quote) without competing with the rows above it. */
+.record-note {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+}

@@ -20,8 +20,32 @@ export const TEE = {
   ppid: "62d54040cb9dfc08bb13006fa75ece56",
   hardware: "Intel TDX",
   runtime: "dstack 0.5.12 · Phala Cloud",
+  /**
+   * When the contract stops accepting this agent's quote. An attestation is a
+   * statement about a moment, not a permanent badge: the contract expires one
+   * after `attestation_expiration_time_ms` (7 days here) and the agent must
+   * re-attest from inside the enclave to keep submitting. The verdicts it
+   * already signed stay in the record either way — they were accepted while
+   * the quote was valid, and the record is append-only.
+   */
+  validUntilMs: 1795111966844,
   explorer: "https://testnet.nearblocks.io/address/bona-fide-tee1.testnet",
 } as const;
+
+/** Whether the attested agent's quote is still accepted, as of now. */
+export function attestationIsCurrent(now: number = Date.now()): boolean {
+  return now < TEE.validUntilMs;
+}
+
+/** e.g. "19 Nov 2026" — the day the quote stops being accepted. */
+export function validUntilLabel(): string {
+  return new Date(TEE.validUntilMs).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 /** First and last n characters of a long hex id, e.g. 7fe60787…1409173. */
 export function truncHex(hex: string, head = 8, tail = 7): string {
