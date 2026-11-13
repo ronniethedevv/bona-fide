@@ -12,7 +12,7 @@ interface WalletState {
   ready: boolean;
   signIn: () => void;
   signOut: () => Promise<void>;
-  /** Sign and send a function call to the Bona Fide contract. */
+  /** Sign and send a function call to the BonaFide contract. */
   call: (methodName: string, args: Record<string, unknown>, deposit?: string) => Promise<void>;
 }
 

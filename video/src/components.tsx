@@ -283,7 +283,7 @@ export function EndCard({ dur, voStart, url, repo }: SceneProps & { url: string;
   return (
     <Ledger>
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", opacity }}>
-        <div style={{ fontFamily: theme.serif, fontSize: 118, color: theme.text }}>Bona Fide</div>
+        <div style={{ fontFamily: theme.serif, fontSize: 118, color: theme.text }}>BonaFide</div>
         <div style={{ height: 1, width: rule, background: theme.border, margin: "34px 0" }} />
         <div style={{ fontFamily: theme.mono, fontSize: 28, color: theme.text2, letterSpacing: "0.04em" }}>{url}</div>
         <div style={{ fontFamily: theme.mono, fontSize: 22, color: theme.muted, marginTop: 16 }}>{repo}</div>

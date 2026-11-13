@@ -3,7 +3,7 @@ export type NetworkId = "testnet" | "mainnet";
 
 export const NETWORK: NetworkId = (import.meta.env.VITE_NEAR_NETWORK as NetworkId) ?? "testnet";
 
-/** The deployed Bona Fide contract account id. */
+/** The deployed BonaFide contract account id. */
 export const CONTRACT_ID: string = import.meta.env.VITE_CONTRACT_ID ?? "";
 
 /** The agent account id whose enclave key the browser seals to. */

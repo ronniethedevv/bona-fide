@@ -1,5 +1,5 @@
 /**
- * Bona Fide Shade Agent entry point.
+ * BonaFide Shade Agent entry point.
  *
  * On start it registers the attested agent, publishes the enclave's X25519
  * public key (`set_enc_pubkey`), and serves HTTP: health + the key-intake

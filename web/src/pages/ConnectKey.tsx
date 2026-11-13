@@ -55,7 +55,7 @@ export function ConnectKey() {
       <BackLink to={`/mandate/${id}`} label={`Mandate #${id}`} />
       <h1>Connect key — mandate #{id}</h1>
       <p className="notice">
-        Create a key with <strong>read permissions only</strong>. Bona Fide rejects keys that can trade or
+        Create a key with <strong>read permissions only</strong>. BonaFide rejects keys that can trade or
         withdraw.
       </p>
       <p className="notice">

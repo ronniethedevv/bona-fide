@@ -64,7 +64,7 @@ free trial credit.
       **#NEARHackathon** (optionally @NearLegion, @NearBuilders), and attach the
       video or screenshots. Draft to edit:
       > Projects hire market makers and can't prove they kept the deal — not
-      > without seeing their book. Bona Fide, built at NEAR HACKATHON: the MM
+      > without seeing their book. BonaFide, built at NEAR HACKATHON: the MM
       > hands a read-only key to a sealed TEE, deterministic code scores every
       > epoch, and a @NEARProtocol contract keeps the verdicts append-only.
       > The agent can't move money, so there's nothing to steal. Pass and Fail,
@@ -74,13 +74,13 @@ free trial credit.
       wallet (free; named like `yourname.near` or implicit). The rules forbid
       anyone creating or inventing it on the team's behalf.
 - [ ] **Confirm the submission fields** (the team decides every one; nothing is
-      guessed): project name (suggest: `Bona Fide`), lead name, contact email,
+      guessed): project name (suggest: `BonaFide`), lead name, contact email,
       team size (`1`), tracks (suggest: `privacy`, `security`), payout account,
       repo URL (`https://github.com/ronniethedevv/bona-fide`), demo post URL,
       idea text 20–2000 chars (draft below), consent read verbatim.
       > Draft idea text: "Token projects hire market makers and lend them
       > tokens, then can't prove KPIs were kept or loans weren't dumped — the
-      > incumbent fix is handing your order book to a third party. Bona Fide is
+      > incumbent fix is handing your order book to a third party. BonaFide is
       > a Shade Agent on NEAR: the MM gives a read-only exchange key, sealed in
       > the browser to a key that exists only inside a Phala TEE. Deterministic
       > code samples the account at TEE-jittered moments, scores spread, depth,

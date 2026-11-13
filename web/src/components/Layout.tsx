@@ -18,7 +18,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="topbar">
         <div className="container topbar-inner">
           <Link to="/" className="brand">
-            Bona&nbsp;Fide
+            BonaFide
             <span className="brand-net">NEAR {NETWORK}</span>
           </Link>
           <nav className="topnav">

@@ -1,4 +1,4 @@
-# Deploying Bona Fide (testnet + Phala TEE)
+# Deploying BonaFide (testnet + Phala TEE)
 
 The contract (`contract/`) and agent (`agent/`) deploy together with the Shade
 Agent CLI. Start in **local** mode to validate, then switch to **TEE** mode for
@@ -103,6 +103,6 @@ The agent registers, calls `set_enc_pubkey`, and serves on `:3000`.
 - Contract build for deploy: `cd contract && cargo near build --locked` (or let
   the CLI build from source via `deploy_from_source`).
 - `new` takes `requires_tee`, `attestation_expiration_time_ms`, `owner_id` — no
-  `mpc_contract_id` (Bona Fide uses no Chain Signatures in v1).
+  `mpc_contract_id` (BonaFide uses no Chain Signatures in v1).
 - The CLI you installed may be newer than the template this config was derived
   from; `shade plan` will flag any schema differences to adjust.

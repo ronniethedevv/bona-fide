@@ -21,7 +21,7 @@ function line(label: string, verdicts: VerdictInput[]): void {
 async function main(): Promise<void> {
   const r: DemoResult = await runDemoScenarios();
   // eslint-disable-next-line no-console
-  console.log("\nBona Fide — replay dry-run (simulated data, scored by the real scorer)\n");
+  console.log("\nBonaFide — replay dry-run (simulated data, scored by the real scorer)\n");
   line("honest-mm", r.honest);
   line("dumping-mm", r.dumping);
   // eslint-disable-next-line no-console

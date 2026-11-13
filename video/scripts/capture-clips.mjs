@@ -81,7 +81,9 @@ const CLIPS = [
       const search = page.locator("input.search");
       if (await search.count()) {
         await search.click();
-        await search.type("experiment", { delay: 110 });
+        // Filter to the market maker whose mandate has a real counterparty:
+        // the row that lingers on screen shows who vouched for it.
+        await search.type("command", { delay: 110 });
         await settle(page, 2400);
       }
     },

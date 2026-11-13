@@ -1,5 +1,5 @@
 /**
- * Upgrade a deployed Bona Fide contract in place, preserving the record.
+ * Upgrade a deployed BonaFide contract in place, preserving the record.
  *
  * `update_contract` takes RAW bytes — 8 bytes of gas (u64 LE) followed by the
  * wasm — not JSON, so this builds the transaction by hand. The contract then

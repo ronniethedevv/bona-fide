@@ -1,4 +1,4 @@
-# Bona Fide
+# BonaFide
 
 Market makers prove they kept their deals — inside a sealed enclave, so no one sees their book.
 
@@ -32,7 +32,7 @@ third party. Large firms tolerate that; small ones stay invisible or exposed.
 In market making, the book *is* the strategy. Asking someone to publish it so
 they can be trusted is asking them to stop being a market maker.
 
-## What Bona Fide does — the life of one mandate
+## What BonaFide does — the life of one mandate
 
 1. **Co-sign the terms on NEAR.** The market maker proposes an *Engagement
    Mandate* — token pair, exchange, KPI bounds, loan cap, dates. The terms are
@@ -206,7 +206,6 @@ than aspirational.
 - NEAR AI Cloud explainer for failed epochs (a private note from the metrics).
 - Paid detailed lookups (HTTP 402).
 - Chain Signatures mirror of summaries to other chains.
-- A Midnight / zero-knowledge variant.
 
 ## Documentation
 

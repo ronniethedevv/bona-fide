@@ -13,7 +13,7 @@ and a NEAR contract keeps their track record — in three concrete beats.
 
 | # | Time | Screen | Say / show |
 |---|------|--------|------------|
-| 1 | 0:00–0:18 | Directory | "Projects pay market makers to keep markets liquid — and can't prove they did the job without seeing their book. Bona Fide proves it inside a sealed enclave. And unlike most finance agents, this one never trades or moves funds — it only reads and signs attestations, so there's nothing to steal." Point at the MM list with pass rates. |
+| 1 | 0:00–0:18 | Directory | "Projects pay market makers to keep markets liquid — and can't prove they did the job without seeing their book. BonaFide proves it inside a sealed enclave. And unlike most finance agents, this one never trades or moves funds — it only reads and signs attestations, so there's nothing to steal." Point at the MM list with pass rates. |
 | 2 | 0:15–0:35 | Honest MM → mandate | Open the honest MM's mandate. Scroll the **epoch timeline** — all green **Pass**. Click a cell: show uptime, spread, depth, net sells within the loan cap. "Every epoch, attested code scored the real account read-only and signed the verdict on-chain." |
 | 3 | 0:35–0:55 | Dumping MM → mandate | Open the dumping MM. Timeline shows a red **Fail**. Click it: `LOAN_CAP`, net sells above the cap. "This MM dumped loaned tokens — the record catches it. Permanent, append-only." |
 | 4 | 0:55–1:15 | Try the key check | Pick "Trade-enabled key", run it → **rejected (`TRADE_ENABLED`)**. Then the read-only key → accepted. "The enclave checks the key's real permissions before first use. A key that can trade or withdraw is rejected on sight — funds can never move." |
