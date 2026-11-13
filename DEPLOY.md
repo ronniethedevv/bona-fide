@@ -98,6 +98,14 @@ The agent registers, calls `set_enc_pubkey`, and serves on `:3000`.
   **real measurements**, deploys to Phala Cloud, and the enclave derives its key
   from dstack (no `ENCLAVE_SEED_HEX` needed).
 
+In practice this path has sharp edges: the CLI's bundled dstack versions can be
+retired by Phala's KMS, a running agent re-funds a new account on every
+registration retry, and changing the CVM's environment changes the compose hash
+the contract checks. [`docs/CVM-RUNBOOK.md`](./docs/CVM-RUNBOOK.md) is the
+operational guide — what to stop before changing what, how to approve the
+enclave's own measurements, and the WSL/MTU failures that look like npm
+problems.
+
 ## Notes
 
 - Contract build for deploy: `cd contract && cargo near build --locked` (or let

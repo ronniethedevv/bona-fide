@@ -110,37 +110,141 @@ Stated plainly, because it matters:
 | Read-only key check | **Real logic**; demonstrated against canned Binance responses (labelled), since the live check needs a real exchange key |
 | TEE attestation | **Real, live on testnet** — a second deployment, [`bona-fide-tee1.testnet`](https://testnet.nearblocks.io/address/bona-fide-tee1.testnet), runs `requires_tee: true` on Phala Cloud (Intel TDX, dstack 0.5.12). The contract verified a genuine hardware quote, registered the enclave agent (non-zero measurements, real platform id, enclave key published), and then **accepted that agent's verdicts**: the deterministic scorer ran *inside the enclave* and its Pass/Pass and Fail(`LOAN_CAP`) are recorded on-chain. Block-stamped in [`evidence/live-tee/`](./evidence/live-tee/). The market data behind them is still the committed replay fixtures (the row above), and the first deployment keeps the local-attestation record. **The quote expires on 19 Nov 2026** — `attestation_expiration_time_ms` is 7 days, so the contract stops accepting this agent unless it re-attests from inside the enclave. That is the design working: an attestation describes a moment, not a permanent badge. The verdicts it signed were accepted while it was valid and the record is append-only, so they stand, and the landing page says so once the date passes |
 
-## How to judge this fastest
+## How to check this without trusting us
 
-**1. See the record (no wallet, nothing to install).** Open
-[the app](https://bona-fide-mm.vercel.app), click a
-market maker on the **Directory**, open a mandate, and read the epoch timeline
-— green **Pass**, red **Fail** (with reasons like `LOAN_CAP`), grey **Outage**,
-hatched **Missed**.
+Clicking around our app proves nothing: we wrote it, and it could render
+anything we like. So this list is ordered by **how little you have to take on
+faith**, starting where we are not in the loop at all. Our app is last, on
+purpose.
 
-**2. Try to break it.** Open **Try the key check** and feed it the
-trade-enabled key: the enclave's permission check rejects it on sight
-(`TRADE_ENABLED`). The read-only key is accepted.
+Every command below was run before it was written down.
 
-**3. Recompute a verdict yourself, offline.**
+**1. Read the chain directly. Nothing of ours in the path.**
+
+A public NEAR testnet RPC, no tooling to install:
+
+```bash
+curl -s https://test.rpc.fastnear.com -H 'content-type: application/json' -d '{
+  "jsonrpc":"2.0","id":1,"method":"query","params":{
+    "request_type":"call_function","finality":"final",
+    "account_id":"bona-fide-rt2.testnet","method_name":"list_mandates",
+    "args_base64":"eyJmcm9tX2luZGV4IjowLCJsaW1pdCI6NTB9"}}'
+```
+
+`args_base64` is base64 of `{"from_index":0,"limit":50}`, and the reply's
+`result.result` is the JSON response as an array of byte values — decode it, or
+read the same state in a browser on
+[NearBlocks](https://testnet.nearblocks.io/address/bona-fide-rt2.testnet).
+The same call with `get_verdicts` (`{"id":"1","from_epoch":0,"limit":50}`) and
+`get_agents` (`{}`) returns the rest. Any NEAR CLI will do the same thing —
+check its own syntax, since it changes between versions.
+
+What you get back is public state on a chain we do not control: three
+mandates, their verdicts, and the registered agent.
+
+**2. Read what the contract will and will not accept.**
+
+The guarantees live in [`contract/src/`](./contract/), enforced, rather than in
+prose like this paragraph:
+
+- `submit_verdict` takes nothing from an account that is not a registered,
+  attested agent — and rejects a verdict whose terms hash does not match the
+  mandate it claims to score.
+- A verdict for an `(id, epoch)` that already exists is rejected, never
+  overwritten. That is what "append-only" means here.
+- `cosign_mandate` requires an allowlisted project that the terms themselves
+  name, so the co-signature cannot come from the market maker.
+
+`cargo test --manifest-path contract/Cargo.toml` runs 22 tests, five of them
+over exactly those three rules (`submit_verdict_rejects_non_agent`,
+`submit_verdict_happy_and_no_overwrite`,
+`submit_verdict_rejects_terms_hash_mismatch`, `cosign_requires_allowlist`,
+`cosign_only_named_project`). Read them and decide for yourself whether the
+state in step 1 could have been produced another way.
+
+**3. Recompute the verdicts yourself.**
+
 ```bash
 git clone https://github.com/ronniethedevv/bona-fide && cd bona-fide
-npm --prefix agent install
+npm --prefix agent install          # this step needs the network; the next does not
 npm run demo:replay
 ```
-The real scorer runs on the committed fixtures and prints the same verdicts the
-chain holds: honest → **Pass**, dumping → **Fail** (`LOAN_CAP`). No wallet, no
-exchange account, no network.
 
-**4. Recompute the evidence from chain state.**
-```bash
-npm --prefix agent install && npm run evidence
+prints:
+
 ```
-Every file in `evidence/live/` is rewritten from the live contract, each
-stamped with the block it was read at. Diff it against what is committed.
+  honest-mm    epoch 0: Pass  |  epoch 1: Pass
+  dumping-mm   epoch 0: Fail (LOAN_CAP)
 
-**5. Run the whole stack.** Deploy your own copy for faucet NEAR —
-[`DEPLOY.md`](./DEPLOY.md) is the complete path, WSL keyring quirks included.
+  Key permission check (canned exchange responses):
+    read-only key   → ACCEPTED
+    trade key       → REJECTED (TRADE_ENABLED)
+    withdraw key    → REJECTED (WITHDRAW_ENABLED)
+```
+
+No wallet, no exchange account. Compare it against what step 1 returned.
+Matching output does not prove we are honest — it proves the code in this
+repository is the code that produced the record, which is the part worth
+checking.
+
+**4. Recompute the published evidence from chain state.**
+
+```bash
+CONTRACT_ID=bona-fide-rt2.testnet npm run evidence
+git diff evidence/live
+```
+
+Every file in [`evidence/live/`](./evidence/live/) is rewritten from the live
+contract and stamped with the block it was read at. A clean diff means what we
+committed is what the chain says. A dirty one means we are wrong and you should
+believe the chain.
+
+**5. Check the attestation — and what it does not cover.**
+
+[`bona-fide-tee1.testnet`](https://testnet.nearblocks.io/address/bona-fide-tee1.testnet)
+runs `requires_tee: true`. `get_agents` on it returns the measurements the
+contract verified, the platform id, and `valid_until_ms`. From that you can
+confirm the contract accepted a hardware quote and that its measurements match
+an approved entry.
+
+You cannot confirm from there that those measurements correspond to *this*
+source — that needs a reproducible dstack build of the agent image. We say so
+rather than implying the chain settles it. The same listing also shows an agent
+whose `validity` is `Invalid(InvalidMeasurements)`: that is the contract
+refusing code whose measurements were not approved, left in place because it is
+evidence the gate works.
+
+**6. Then, if you like, open the app.**
+
+[bona-fide-mm.vercel.app](https://bona-fide-mm.vercel.app) is a readable view
+of steps 1 and 5. It is the least load-bearing item on this list.
+
+### What this demo does not show
+
+Stated here rather than left for you to find:
+
+- **The market data is committed replay fixtures, not a live exchange.**
+  Verdicts are labelled `SIMULATED DATA` in the app and `Replay` on chain. The
+  scorer, the contract and the attestation are real; the order book is test
+  data.
+- **Two of the three mandates are self-dealt** — the same account is market
+  maker and co-signing project. Only `#2` has an independent counterparty. The
+  directory flags the other two itself.
+- **Nothing is identity-bound yet.** The binding fields went live with the
+  state migration and every mandate reads `account_verified: false`, because no
+  attested agent has yet seen a read-only key for a committed account.
+- **The TEE attestation expires 19 Nov 2026.** After that the contract stops
+  accepting that agent. The verdicts it already signed stand: they were
+  accepted while it was valid, and the record is append-only.
+
+[Trust limits](#trust-limits-read-these) covers what a verdict cannot prove
+even when all of the above checks out.
+
+**Run the whole thing yourself.** [`DEPLOY.md`](./DEPLOY.md) is the complete
+path on faucet NEAR, WSL keyring quirks included, and
+[`docs/CVM-RUNBOOK.md`](./docs/CVM-RUNBOOK.md) is the operational guide for the
+attested agent — including the mistakes that cost us NEAR, written down so they
+cost you nothing.
 
 ## Components
 
@@ -216,6 +320,7 @@ than aspirational.
 | [`docs/SCORING.md`](./docs/SCORING.md) | The scoring specification, assurance method, industry references, published gaps. |
 | [`evidence/`](./evidence/) | Deployment record + block-stamped chain state behind every claim. |
 | [`DEPLOY.md`](./DEPLOY.md) | Reproduce the deployment end to end on testnet. |
+| [`docs/CVM-RUNBOOK.md`](./docs/CVM-RUNBOOK.md) | Operating the attested agent: what to stop before changing what, approving the enclave's own measurements, and the failures that cost us NEAR. |
 | [`docs/demo-script.md`](./docs/demo-script.md) · [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) | The demo video script and the submission checklist. |
 
 ## Develop

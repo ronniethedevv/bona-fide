@@ -1,6 +1,6 @@
 {
   "source": "http://127.0.0.1:4179",
-  "capturedAt": "2026-11-13T16:04:19.506Z",
+  "capturedAt": "2026-11-13T16:34:52.787Z",
   "available": [
     "landing",
     "directory",
@@ -9,10 +9,10 @@
     "keycheck"
   ],
   "durations": {
-    "landing": 15.633333,
-    "directory": 11.433333,
-    "mandate-pass": 14.666667,
-    "mandate-fail": 14.033333,
-    "keycheck": 13.966667
+    "landing": 13.633333,
+    "directory": 9.533333,
+    "mandate-pass": 12.633333,
+    "mandate-fail": 12.1,
+    "keycheck": 12.266667
   }
 }

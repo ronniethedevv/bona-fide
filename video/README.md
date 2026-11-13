@@ -30,3 +30,19 @@ than failing the build.
 
 Fonts (Newsreader, IBM Plex Sans/Mono) are bundled from npm, so rendering needs
 no network access and is deterministic.
+
+## Music
+
+The composition mixes a bed from `public/music/bed.mp3` when that file exists
+and simply omits it when it does not, so a clone with no music still renders.
+
+The track is **not committed** — it is licensed third-party audio and this
+repository is public. Drop your own there before `npm run render`.
+
+Level is set from measurement rather than taste: the bed supplied for the
+submission cut is -11.4 LUFS against a -24.0 LUFS voiceover, i.e. already
+louder than the voice, so the composition attenuates it to `0.025` (about
+-32 dB), putting it ~19 dB under the narration. If you swap the track, measure
+it — `ffmpeg -i public/music/bed.mp3 -af ebur128 -f null -` — and adjust the
+volume in `src/Demo.tsx` to keep roughly that gap, rather than reusing the
+number.

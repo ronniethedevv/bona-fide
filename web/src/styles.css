@@ -1263,3 +1263,24 @@ h3 {
     white-space: nowrap;
   }
 }
+
+/* Standing instructions, not conditions. They were rendering in the same panel
+   as status notes, so a page explaining how to make a key read as three errors
+   stacked up. Prose, with the key words doing the work. */
+.lede {
+  max-width: 68ch;
+  margin-bottom: 20px;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.lede strong {
+  color: var(--text);
+}
+
+/* A note about the state of this deployment right now — the one thing on the
+   page that is a condition rather than an instruction. */
+.notice-status {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}

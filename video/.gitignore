@@ -2,3 +2,10 @@ node_modules/
 out/
 # Captured footage is regenerated from the live app with `npm run capture`.
 public/clips/*.mp4
+
+# The music bed is a licensed third-party track supplied locally. The generated
+# voiceover next to it is ours and stays committed; this is not, and the
+# repository is public. Drop your own at public/music/bed.mp3 before rendering;
+# the composition simply omits music when the file is absent.
+public/music/*
+!public/music/.gitkeep
