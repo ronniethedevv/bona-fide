@@ -1252,3 +1252,14 @@ h3 {
     margin-bottom: 14px;
   }
 }
+
+/* The directory gained a "Vouched for by" column, which squeezed the two
+   account columns enough to wrap every id onto two lines. Account ids read as
+   one token, so keep them on one line where there is room; below 900px the
+   table scrolls horizontally and wrapping is the right behaviour again. */
+@media (min-width: 900px) {
+  .table td:first-child,
+  .table td.mono {
+    white-space: nowrap;
+  }
+}

@@ -81,9 +81,12 @@ const CLIPS = [
       const search = page.locator("input.search");
       if (await search.count()) {
         await search.click();
-        // Filter to the market maker whose mandate has a real counterparty:
-        // the row that lingers on screen shows who vouched for it.
-        await search.type("command", { delay: 110 });
+        // Type something every account matches: the search beat shows the
+        // filter works without hiding rows. Narrowing to one account would
+        // leave the shot resting on a single row, and the one with a real
+        // counterparty has no verdicts yet — a poor frame under narration
+        // about every epoch being scored.
+        await search.type("testnet", { delay: 110 });
         await settle(page, 2400);
       }
     },
