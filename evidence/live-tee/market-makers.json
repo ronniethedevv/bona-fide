@@ -1,8 +1,8 @@
 {
   "method": "list_mms",
   "args": {},
-  "block_height": 277398639,
-  "block_hash": "G49d4gGMnxz3YxTmYKaPcAFcFnyzJxTPhWf4LsmJc33e",
+  "block_height": 277523898,
+  "block_hash": "7n5u7Nu55w9R3o5RwF417eksqSUn1RZFtXXEesY7SBUC",
   "result": [
     {
       "account_id": "command-hay.testnet",

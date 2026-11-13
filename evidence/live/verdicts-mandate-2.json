@@ -1,0 +1,11 @@
+{
+  "method": "get_verdicts",
+  "args": {
+    "id": "2",
+    "from_epoch": 0,
+    "limit": 100
+  },
+  "block_height": 277523870,
+  "block_hash": "4zWvJHdxxhF7355scoY6JpEbdDLGRFp2stuY2G2DoLw1",
+  "result": []
+}

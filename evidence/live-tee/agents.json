@@ -1,8 +1,8 @@
 {
   "method": "get_agents",
   "args": {},
-  "block_height": 277398638,
-  "block_hash": "J7GctWbXQbRcuswPUq4wBy91kops9aUvWzYc4WWdpAuP",
+  "block_height": 277523898,
+  "block_hash": "7n5u7Nu55w9R3o5RwF417eksqSUn1RZFtXXEesY7SBUC",
   "result": [
     {
       "account_id": "c59cdaf10ab648197c7a1737beb75658aadacb1365326388d6f7132b58030b2a",
