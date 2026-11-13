@@ -331,3 +331,150 @@ fn attest_binding_rejects_bad_tag() {
     testing_env!(ctx(agent(), None, 0).build());
     c.attest_account_binding(U64::from(id), "ab".repeat(31)); // 62 chars
 }
+
+// --- state migration (v1 → identity binding) -------------------------------
+//
+// The deployed v1 contract wrote mandates without `account_verified` /
+// `account_tag`. Borsh has no field tags, so those bytes are two fields short
+// of what the current `Mandate` expects: without `migrate`, an upgraded
+// contract panics on every read of its own mandates. These tests build real v1
+// state, run the migration, and check the record came through intact.
+
+use crate::migrate::{OldContract, OldMandate};
+
+fn old_mandate(id: u64, status: MandateStatus) -> OldMandate {
+    OldMandate {
+        id: U64::from(id),
+        mm: mm(),
+        project: project(),
+        exchange: "binance".to_string(),
+        pair: "TOKEN_USDT".to_string(),
+        account_label: format!("mm-{id}"),
+        max_spread_bps: 50,
+        depth_band_bps: 200,
+        min_depth_per_side_quote: U128::from(10_000_000_000),
+        min_uptime_bps: 9_000,
+        loan_cap_per_epoch_base: U128::from(1_000_000),
+        epoch_secs: 120,
+        sample_secs: 30,
+        start_ts: U64::from(0),
+        end_ts: U64::from(1_200),
+        status,
+        terms_hash: "a".repeat(64),
+    }
+}
+
+/// Write v1 state with `count` mandates, exactly as the old code would have.
+fn write_v1_state(count: u64) {
+    let mut mandates: IterableMap<u64, OldMandate> = IterableMap::new(StorageKey::Mandates);
+    for id in 0..count {
+        mandates.insert(id, old_mandate(id, MandateStatus::Active));
+    }
+    let mut mm_summaries: IterableMap<AccountId, MmSummary> =
+        IterableMap::new(StorageKey::MmSummaries);
+    mm_summaries.insert(
+        mm(),
+        MmSummary {
+            engagements: count as u32,
+            pass: 2,
+            fail: 1,
+            missed: 0,
+            outage: 0,
+            last_verdict_ms: U64::from(42),
+        },
+    );
+    let mut allowlisted_projects: IterableSet<AccountId> =
+        IterableSet::new(StorageKey::AllowlistedProjects);
+    allowlisted_projects.insert(project());
+
+    let old = OldContract {
+        requires_tee: false,
+        attestation_expiration_time_ms: 100_000,
+        owner_id: owner(),
+        approved_measurements: IterableSet::new(StorageKey::ApprovedMeasurements),
+        approved_ppids: IterableSet::new(StorageKey::ApprovedPpids),
+        agents: IterableMap::new(StorageKey::Agents),
+        whitelisted_agents_for_local: IterableSet::new(StorageKey::WhitelistedAgentsForLocal),
+        allowlisted_projects,
+        mandates,
+        verdicts: IterableMap::new(StorageKey::Verdicts),
+        mm_summaries,
+        next_mandate_id: count,
+    };
+    env::state_write(&old);
+}
+
+#[test]
+fn migrate_preserves_mandates_and_defaults_the_new_fields() {
+    testing_env!(ctx(owner(), None, 0).build());
+    write_v1_state(3);
+
+    let c = Contract::migrate();
+
+    let all = c.list_mandates(None, None);
+    assert_eq!(all.len(), 3, "every v1 mandate must survive the migration");
+    for (i, m) in all.iter().enumerate() {
+        assert_eq!(m.id.0, i as u64);
+        assert_eq!(m.mm, mm());
+        assert_eq!(m.project, project());
+        assert_eq!(m.account_label, format!("mm-{i}"));
+        assert_eq!(m.status, MandateStatus::Active);
+        assert_eq!(m.terms_hash, "a".repeat(64));
+        // Nothing is verified retroactively: a tag can only come from an
+        // attested agent calling attest_account_binding after the upgrade.
+        assert!(!m.account_verified);
+        assert_eq!(m.account_tag, None);
+    }
+}
+
+#[test]
+fn migrate_preserves_the_rest_of_the_record() {
+    testing_env!(ctx(owner(), None, 0).build());
+    write_v1_state(2);
+
+    let c = Contract::migrate();
+
+    assert_eq!(c.owner_id, owner());
+    assert_eq!(c.next_mandate_id, 2, "ids must not be reused after upgrade");
+    assert!(!c.requires_tee);
+    assert_eq!(c.attestation_expiration_time_ms, 100_000);
+    assert!(c.is_project_allowlisted(project()));
+    let summary = c.get_mm_summary(mm()).expect("summary survives");
+    assert_eq!(summary.pass, 2);
+    assert_eq!(summary.fail, 1);
+    assert_eq!(summary.last_verdict_ms.0, 42);
+}
+
+#[test]
+fn migrated_contract_accepts_new_mandates_and_bindings() {
+    testing_env!(ctx(owner(), None, 0).build());
+    write_v1_state(2);
+    let mut c = Contract::migrate();
+
+    // The upgraded contract keeps working: a new mandate gets the next free id,
+    // and the identity binding the upgrade was for actually functions.
+    c.approve_measurements(create_mock_full_measurements_hex());
+    c.approve_ppids(vec![Ppid::default()]);
+    register_agent_local(&mut c, 0);
+
+    testing_env!(ctx(mm(), None, 0).build());
+    let id = c.propose_mandate(demo_terms());
+    assert_eq!(id.0, 2, "new mandate continues from the migrated counter");
+    testing_env!(ctx(project(), None, 0).build());
+    c.cosign_mandate(id);
+
+    testing_env!(ctx(agent(), None, 0).build());
+    let tag = "b".repeat(64);
+    c.attest_account_binding(id, tag.clone());
+
+    let m = c.get_mandate(id).expect("mandate");
+    assert!(m.account_verified);
+    assert_eq!(m.account_tag, Some(tag));
+}
+
+#[test]
+#[should_panic(expected = "No v1 state to migrate")]
+fn migrate_refuses_when_there_is_no_state() {
+    testing_env!(ctx(owner(), None, 0).build());
+    Contract::migrate();
+}

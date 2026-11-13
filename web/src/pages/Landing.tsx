@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { api } from "../near/contract.js";
-import { TEE, truncHex } from "../near/tee.js";
+import { TEE, truncHex, attestationIsCurrent, validUntilLabel } from "../near/tee.js";
 import type { Mandate, MmListing } from "../near/types.js";
 import { useAsync } from "../hooks/useAsync.js";
 
@@ -169,7 +169,13 @@ export function Landing() {
           <div className="record">
             <div className="record-head">
               <span className="record-title">Attested agent</span>
-              <span className="pill pill-pass">Valid</span>
+              {attestationIsCurrent() ? (
+                <span className="pill pill-pass">Valid</span>
+              ) : (
+                <span className="pill pill-simulated" title="The quote has aged out. The verdicts it signed stay in the record.">
+                  Expired
+                </span>
+              )}
             </div>
             <div className="record-row">
               <span className="record-label">Hardware</span>
@@ -195,6 +201,15 @@ export function Landing() {
               <span className="record-label">Agent</span>
               <span className="record-value">{truncHex(TEE.agentId)}</span>
             </div>
+            <div className="record-row">
+              <span className="record-label">Quote accepted until</span>
+              <span className="record-value">{validUntilLabel()}</span>
+            </div>
+            <p className="record-note">
+              {attestationIsCurrent()
+                ? "An attestation describes a moment, not a permanent badge. This one expires, and the enclave has to re-attest to keep submitting."
+                : "This quote has aged out, which is the design working rather than failing. The verdicts it signed were accepted while it was valid, and the record is append-only, so they stand."}
+            </p>
           </div>
         </div>
       </section>
