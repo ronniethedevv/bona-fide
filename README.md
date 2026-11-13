@@ -232,7 +232,11 @@ Stated here rather than left for you to find:
   directory flags the other two itself.
 - **Nothing is identity-bound yet.** The binding fields went live with the
   state migration and every mandate reads `account_verified: false`, because no
-  attested agent has yet seen a read-only key for a committed account.
+  attested agent has yet seen a read-only key for a committed account. That
+  needs a key from a **production** exchange account: Binance Spot Testnet
+  serves no `/sapi/*` endpoints at all, so the read-only permission check
+  cannot run there, and the agent rejects a key it could not verify rather than
+  binding one it could not check.
 - **The TEE attestation expires 19 Nov 2026.** After that the contract stops
   accepting that agent. The verdicts it already signed stand: they were
   accepted while it was valid, and the record is append-only.

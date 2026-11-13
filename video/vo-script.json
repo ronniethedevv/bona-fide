@@ -10,5 +10,5 @@
   "vo-09-terminal": "You do not have to take our word for any of it. Clone the repository and run the scorer yourself. Same code, same verdicts, no wallet and no exchange account.",
   "vo-10-attest": "The live agent runs inside Intel TDX on Phala Cloud. The contract verifies the hardware quote, and accepts verdicts only from code whose measurements are approved on chain.",
   "vo-11-closing": "AI may propose. Deterministic code decides. And the log cannot be quietly edited.",
-  "vo-12-end": "BonaFide. Built at the NEAR hackathon, and live on testnet."
+  "vo-12-end": "BonaFide. Built for the NEAR hackathon, and live on testnet."
 }

@@ -47,7 +47,13 @@ function pickVoice() {
  * "bona fee-day". The name is pronounced BOH-nuh-fyde, so the model is handed
  * a spelling that gets there.
  */
-const PRONUNCIATION = [[/\bBonaFide\b/g, "Bonafyde"]];
+const PRONUNCIATION = [
+  // Read as the Latin phrase the name comes from: "bona fee-day".
+  [/\bBonaFide\b/g, "Bonafyde"],
+  // Both uses in the script are the adjective (/laɪv/ — "live on testnet",
+  // "the live agent"), which the model otherwise reads as the verb.
+  [/\blive\b/g, "laiv"],
+];
 
 const forSpeech = (text) => PRONUNCIATION.reduce((t, [re, to]) => t.replace(re, to), text);
 
