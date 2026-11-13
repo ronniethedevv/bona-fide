@@ -44,6 +44,14 @@ free trial credit.
       compose hash could be approved before boot.
       **Stop the CVM in the Phala dashboard** — the on-chain record survives it.
       WARNING: auto-topup stays OFF.
+- [x] **Identity binding live on the demo contract.** The v1 deployment predated
+      the merge and Borsh cannot read a struct that gained fields, so
+      `bona-fide-rt2.testnet` was upgraded in place
+      ([tx `2eFn4xY7gWyi…`](https://testnet.nearblocks.io/txns/2eFn4xY7gWyiQS14kRK2a5ePAnXW5V8ZhwveTF4qnnta)) with the state
+      migration in `agent/scripts/upgrade-contract.ts`. All 3 mandates, 3
+      verdicts and the agent registration survived; every mandate now carries
+      `account_verified: false`. A mandate becomes verified only when an attested
+      agent binds it — nothing was claimed retroactively.
 - [ ] **Screenshots** into `evidence/screenshots/` (they double as X-post
       media): the Directory; the honest mandate's green timeline; the dumping
       mandate's red `LOAN_CAP` timeline; the key check rejecting

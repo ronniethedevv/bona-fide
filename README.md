@@ -197,11 +197,12 @@ than aspirational.
 - **Identity binding** — NEAR identity ↔ exchange account, privacy-preserving
   (salted enclave-held fingerprints; Sybil-resistant). Not a slide: built,
   tested, and merged ([PR #18](https://github.com/ronniethedevv/bona-fide/pull/18),
-  [`docs/identity-binding.md`](./docs/identity-binding.md)). A deployment picks
-  it up through the state migration in
-  [`agent/scripts/upgrade-contract.ts`](./agent/scripts/upgrade-contract.ts);
-  a mandate then shows as verified only once an attested agent has actually
-  bound it.
+  [`docs/identity-binding.md`](./docs/identity-binding.md)) — and **migrated onto
+  the live contract** ([tx `2eFn4xY7gWyi…`](https://testnet.nearblocks.io/txns/2eFn4xY7gWyiQS14kRK2a5ePAnXW5V8ZhwveTF4qnnta)),
+  so every mandate on `bona-fide-rt2.testnet` now carries the binding fields.
+  What is left is a binding itself: a mandate shows as verified only once an
+  attested agent has seen a working read-only key for the committed account and
+  called `attest_account_binding`. Nothing was marked verified by the migration.
 - NEAR AI Cloud explainer for failed epochs (a private note from the metrics).
 - Paid detailed lookups (HTTP 402).
 - Chain Signatures mirror of summaries to other chains.
