@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";
 import { api } from "../near/contract.js";
 import { bpsToPercent } from "../near/format.js";
 import { StatusBadge } from "../components/StatusBadge.js";
@@ -26,6 +27,7 @@ export function MmProfile() {
 
   return (
     <section>
+      <BackLink to="/directory" label="All market makers" />
       <h1 className="mono">{account}</h1>
       {state.loading && <p className="muted">Loading…</p>}
       {state.error && <p className="error">{state.error}</p>}

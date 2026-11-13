@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";import { useNavigate } from "react-router-dom";
 import { termsHash } from "../near/terms.js";
 import type { MandateTerms } from "../near/types.js";
 import { useWallet } from "../near/WalletContext.js";
@@ -82,6 +82,7 @@ export function NewMandate() {
   if (!accountId) {
     return (
       <section>
+        <BackLink to="/directory" label="All market makers" />
         <h1>Create mandate</h1>
         <p className="muted">Connect your wallet (you become the market maker).</p>
         <button className="btn" onClick={signIn}>
@@ -93,6 +94,7 @@ export function NewMandate() {
 
   return (
     <section>
+      <BackLink to="/directory" label="All market makers" />
       <h1>Create mandate</h1>
       <form className="form" onSubmit={submit}>
         <Field label="Project account">

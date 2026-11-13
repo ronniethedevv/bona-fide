@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BackLink } from "../components/BackLink.js";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../near/contract.js";
 import { bps, bpsToPercent, formatQuote, formatUnixSecs, shortHash } from "../near/format.js";
@@ -18,16 +19,36 @@ export function MandatePage() {
   );
   const [selected, setSelected] = useState<EpochVerdict | null>(null);
 
-  if (state.loading) return <p className="muted">Loading…</p>;
-  if (state.error) return <p className="error">{state.error}</p>;
+  const exit = <BackLink to="/directory" label="All market makers" />;
+  if (state.loading)
+    return (
+      <section>
+        {exit}
+        <p className="muted">Loading…</p>
+      </section>
+    );
+  if (state.error)
+    return (
+      <section>
+        {exit}
+        <p className="error">{state.error}</p>
+      </section>
+    );
   const m = state.data?.mandate;
-  if (!m) return <p className="muted">Mandate not found.</p>;
+  if (!m)
+    return (
+      <section>
+        {exit}
+        <p className="muted">Mandate #{id} is not on this contract.</p>
+      </section>
+    );
 
   const verdicts = state.data?.verdicts ?? [];
   const simulated = verdicts.some((v) => v.verdict.data_source === "Replay");
 
   return (
     <section>
+      <BackLink to="/directory" label="All market makers" />
       <div className="page-head">
         <h1>
           Mandate #{m.id} <StatusBadge status={m.status} />

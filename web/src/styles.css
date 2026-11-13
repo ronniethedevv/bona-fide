@@ -1230,3 +1230,25 @@ h3 {
   line-height: 1.55;
   color: var(--muted);
 }
+
+/* Orientation link above a nested page's title. Quiet by default — it is a way
+   out, not a call to action — and large enough to be an easy tap target. */
+.backlink {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-decoration: none;
+}
+.backlink:hover,
+.backlink:focus-visible {
+  color: var(--text);
+}
+@media (max-width: 768px) {
+  .backlink {
+    margin-bottom: 14px;
+  }
+}
