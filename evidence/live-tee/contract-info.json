@@ -1,8 +1,8 @@
 {
   "method": "get_contract_info",
   "args": {},
-  "block_height": 277398637,
-  "block_hash": "7pbMNpNpnTGGP4Dwepmy2B8eyN5hMGAkdocRy6ayY6zz",
+  "block_height": 277523897,
+  "block_hash": "4p4HfrkJPMU5n487xuevcsjRiS1xopapnnHDkYKmNuKX",
   "result": {
     "requires_tee": true,
     "attestation_expiration_time_ms": "604800000",

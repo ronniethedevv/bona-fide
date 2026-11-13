@@ -12,7 +12,7 @@
  * Reads the contract id from CONTRACT_ID, else from ../deployment.yaml, else
  * falls back to the live deployment the README documents.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const RPC = process.env.RPC_URL ?? "https://test.rpc.fastnear.com";
@@ -78,6 +78,23 @@ async function main(): Promise<void> {
   const outDir = path.resolve(process.cwd(), outRel);
   const label = path.basename(outDir);
   mkdirSync(outDir, { recursive: true });
+
+  // Each bundle belongs to one contract: evidence/live is the demo deployment,
+  // evidence/live-tee the attested one. The contract id can come from
+  // ../deployment.yaml, which follows whichever CVM was deployed last, so it is
+  // easy to point a capture at the wrong bundle and overwrite it with another
+  // contract's state. Refuse that unless it is clearly intended.
+  const prevSummary = path.join(outDir, "SUMMARY.md");
+  if (existsSync(prevSummary) && !process.env.FORCE) {
+    const prev = readFileSync(prevSummary, "utf8").match(/\*\*Contract:\*\* `([^`]+)`/)?.[1];
+    if (prev && prev !== contractId)
+      throw new Error(
+        `evidence/${label}/ holds ${prev}, but this run reads ${contractId}.\n` +
+          `  Capture the right bundle:  CONTRACT_ID=${prev} npm run evidence\n` +
+          `  Or send this one elsewhere: EVIDENCE_DIR=../evidence/<dir> npm run evidence\n` +
+          `  (set FORCE=1 to overwrite anyway)`,
+      );
+  }
 
   const captured: ViewResult[] = [];
   const save = (name: string, v: ViewResult) => {

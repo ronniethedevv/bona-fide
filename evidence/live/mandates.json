@@ -1,8 +1,8 @@
 {
   "method": "list_mandates",
   "args": {},
-  "block_height": 277238991,
-  "block_hash": "9RZGC68Syzv8HptttQcF74Tf3AauiphVYF95mfrg7Snc",
+  "block_height": 277523869,
+  "block_hash": "9xgnXyZjbp8KGkidHf31JnN2azaS8vWd7PbSLAPZQvwA",
   "result": [
     {
       "id": "0",
@@ -41,6 +41,25 @@
       "end_ts": "1794395950",
       "status": "Active",
       "terms_hash": "29b35ec5e7e70a09a26a2cacddc24947666bf9c7a039757eccdd56df50e3359f"
+    },
+    {
+      "id": "2",
+      "mm": "command-hay.testnet",
+      "project": "experiment-still.testnet",
+      "exchange": "binance",
+      "pair": "TOKEN_USDT",
+      "account_label": "mm-independent",
+      "max_spread_bps": 100,
+      "depth_band_bps": 200,
+      "min_depth_per_side_quote": "10000000000",
+      "min_uptime_bps": 9000,
+      "loan_cap_per_epoch_base": "1000000",
+      "epoch_secs": 120,
+      "sample_secs": 30,
+      "start_ts": "1794580966",
+      "end_ts": "1794582166",
+      "status": "Active",
+      "terms_hash": "d4708a76b10da1708b44bba3f061fe575f02ec598d32dbce88f01f85a30d905b"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "method": "list_mms",
   "args": {},
-  "block_height": 277238991,
-  "block_hash": "9RZGC68Syzv8HptttQcF74Tf3AauiphVYF95mfrg7Snc",
+  "block_height": 277523869,
+  "block_hash": "9xgnXyZjbp8KGkidHf31JnN2azaS8vWd7PbSLAPZQvwA",
   "result": [
     {
       "account_id": "experiment-still.testnet",
@@ -13,6 +13,17 @@
         "missed": 0,
         "outage": 0,
         "last_verdict_ms": "1794394771218"
+      }
+    },
+    {
+      "account_id": "command-hay.testnet",
+      "summary": {
+        "engagements": 1,
+        "pass": 0,
+        "fail": 0,
+        "missed": 0,
+        "outage": 0,
+        "last_verdict_ms": "0"
       }
     }
   ]
