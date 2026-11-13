@@ -324,6 +324,7 @@ than aspirational.
 | [`docs/SCORING.md`](./docs/SCORING.md) | The scoring specification, assurance method, industry references, published gaps. |
 | [`evidence/`](./evidence/) | Deployment record + block-stamped chain state behind every claim. |
 | [`DEPLOY.md`](./DEPLOY.md) | Reproduce the deployment end to end on testnet. |
+| [`docs/FOR-PROJECTS.md`](./docs/FOR-PROJECTS.md) | The same system from the token project's side: the sequence, why the market maker proposes and you co-sign, and how to read a verdict. |
 | [`docs/CVM-RUNBOOK.md`](./docs/CVM-RUNBOOK.md) | Operating the attested agent: what to stop before changing what, approving the enclave's own measurements, and the failures that cost us NEAR. |
 | [`docs/demo-script.md`](./docs/demo-script.md) · [`SUBMISSION_CHECKLIST.md`](./SUBMISSION_CHECKLIST.md) | The demo video script and the submission checklist. |
 

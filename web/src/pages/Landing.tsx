@@ -226,7 +226,15 @@ export function Landing() {
               <h3>Token projects</h3>
               <p>
                 Stop taking the market maker&rsquo;s word for it. Commit the terms, read the verdicts, and see
-                a missed epoch for exactly what it is.
+                a missed epoch for exactly what it is.{" "}
+                <a
+                  href="https://github.com/ronniethedevv/bona-fide/blob/main/docs/FOR-PROJECTS.md"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Start here
+                </a>
+                .
               </p>
               <div className="uc-line">
                 <span>Terms</span>
