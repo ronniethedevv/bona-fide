@@ -1,13 +1,26 @@
-# Identity binding (staged — not in the v1 submission)
+# Identity binding
 
 Links a market maker's **NEAR account** to the **exchange account** it actually
 runs, so a Bona Fide track record is a *credential the MM owns* ("this NEAR
 identity provably controls this exchange account, and here's its record") rather
 than an unverified claim — **without exposing the account to anyone**.
 
-Status: implemented behind the `feature/identity-binding` branch, kept out of the
-v1 submission. It builds on the existing contract + agent with no changes to the
-read-only / no-trade guarantees.
+**Status: merged** ([PR #18](https://github.com/ronniethedevv/bona-fide/pull/18)).
+The contract carries `account_verified` and `account_tag`, `attest_account_binding`
+is callable by an attested agent, and the agent binds at key intake. It builds on
+the existing contract + agent with no changes to the read-only / no-trade
+guarantees.
+
+Two fields were added to `Mandate`, and Borsh has no field tags, so a contract
+deployed before the merge cannot read its own mandates under the new code. The
+upgrade path is `agent/scripts/upgrade-contract.ts`, which deploys and runs
+`migrate` in one transaction, then verifies every mandate and verdict survived.
+Until a given deployment has been through that, its mandates have no such fields
+and the UI's verified badge stays dark — which is the honest display, not a bug.
+
+A mandate becomes verified only when an attested agent that saw a working
+read-only key calls `attest_account_binding`. Nothing in the migration marks
+anything verified retroactively.
 
 ## Why it's possible here
 

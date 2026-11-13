@@ -36,6 +36,7 @@ pub use views::{AgentValidity, AgentView, ContractInfo, EpochVerdict};
 
 mod internal;
 mod mandates;
+mod migrate;
 mod owner;
 mod verdicts;
 pub mod views;
