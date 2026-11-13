@@ -55,12 +55,10 @@ export function ConnectKey() {
     <section>
       <BackLink to={`/mandate/${id}`} label={`Mandate #${id}`} />
       <h1>Connect key — mandate #{id}</h1>
-      <p className="notice">
-        Create a key with <strong>read permissions only</strong>. BonaFide rejects keys that can trade or
-        withdraw.
-      </p>
-      <p className="notice">
-        Your key is encrypted in this browser to a key that only exists inside the enclave. We never see it.
+      <p className="lede">
+        Create a key with <strong>read permissions only</strong> — BonaFide rejects keys that can trade or
+        withdraw. It is encrypted in this browser to a key that exists only inside the enclave, so we never
+        see it.
       </p>
 
       {pubkey.loading && <p className="muted">Fetching the enclave key…</p>}
@@ -68,14 +66,14 @@ export function ConnectKey() {
         <p className="error">Could not read the enclave key from the contract. {pubkey.error}</p>
       )}
       {!pubkey.loading && !pubkey.data && (
-        <p className="notice">
+        <p className="notice notice-status">
           No attested agent has published an enclave key on this deployment yet, so a key cannot be sealed
           to one.
         </p>
       )}
 
       {pubkey.data && !AGENT_URL && (
-        <p className="notice">
+        <p className="notice notice-status">
           Key intake is offline for this deployment — the enclave is not currently reachable, so there is
           nowhere to send a key. The record below is unaffected.
         </p>
