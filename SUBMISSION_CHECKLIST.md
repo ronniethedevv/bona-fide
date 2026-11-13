@@ -52,23 +52,24 @@ free trial credit.
       verdicts and the agent registration survived; every mandate now carries
       `account_verified: false`. A mandate becomes verified only when an attested
       agent binds it — nothing was claimed retroactively.
-- [ ] **Screenshots** into `evidence/screenshots/` (they double as X-post
-      media): the Directory; the honest mandate's green timeline; the dumping
-      mandate's red `LOAN_CAP` timeline; the key check rejecting
-      `TRADE_ENABLED`.
+- [x] **Screenshots** in [`evidence/screenshots/`](./evidence/screenshots/)
+      (they double as X-post media): the Directory with its vouching column;
+      the honest mandate's green timeline; the dumping mandate's red
+      `LOAN_CAP` timeline; the key check rejecting `TRADE_ENABLED`.
 - [ ] **Demo video** (~2 min) from [`docs/demo-script.md`](./docs/demo-script.md) —
       per Q-012, the video is what makes the demo judgeable if the hosted app
       is ever down.
 - [ ] **The X demo post** (the team publishes it themselves). It must say the
       project was built at NEAR HACKATHON, tag **@NEARProtocol** and
       **#NEARHackathon** (optionally @NearLegion, @NearBuilders), and attach the
-      video or screenshots. Draft to edit:
-      > Projects hire market makers and can't prove they kept the deal — not
-      > without seeing their book. BonaFide, built at NEAR HACKATHON: the MM
-      > hands a read-only key to a sealed TEE, deterministic code scores every
-      > epoch, and a @NEARProtocol contract keeps the verdicts append-only.
-      > The agent can't move money, so there's nothing to steal. Pass and Fail,
-      > live on testnet — repo + demo below. What would you want scored?
+      video or the screenshots. Draft to edit:
+      > Projects lend their treasury to market makers and then hope. Proving
+      > the deal was kept usually means handing someone your order book.
+      > BonaFide, built at NEAR HACKATHON: the MM hands a read-only key to a
+      > sealed TEE, deterministic code scores every epoch, and a
+      > @NEARProtocol contract keeps the verdicts append-only. The agent
+      > cannot move money, so there is nothing to steal. Pass and Fail, live
+      > on testnet — repo and demo below. What would you want scored?
       > #NEARHackathon
 - [ ] **Mainnet payout account** — create a NEAR *mainnet* account in any
       wallet (free; named like `yourname.near` or implicit). The rules forbid
