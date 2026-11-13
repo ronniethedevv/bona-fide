@@ -1,8 +1,8 @@
 {
   "method": "list_mandates",
   "args": {},
-  "block_height": 277523869,
-  "block_hash": "9xgnXyZjbp8KGkidHf31JnN2azaS8vWd7PbSLAPZQvwA",
+  "block_height": 277529235,
+  "block_hash": "5fzjrj4W6D2RZEgQajDeSzndEEB9DgknftumgDbnq5ZH",
   "result": [
     {
       "id": "0",
@@ -21,7 +21,9 @@
       "start_ts": "1794394750",
       "end_ts": "1794395950",
       "status": "Active",
-      "terms_hash": "a5e47563309b3e8e842dd03e6b5681e264aeccc1fb8f3d574171b9240c44231a"
+      "terms_hash": "a5e47563309b3e8e842dd03e6b5681e264aeccc1fb8f3d574171b9240c44231a",
+      "account_verified": false,
+      "account_tag": null
     },
     {
       "id": "1",
@@ -40,7 +42,9 @@
       "start_ts": "1794394750",
       "end_ts": "1794395950",
       "status": "Active",
-      "terms_hash": "29b35ec5e7e70a09a26a2cacddc24947666bf9c7a039757eccdd56df50e3359f"
+      "terms_hash": "29b35ec5e7e70a09a26a2cacddc24947666bf9c7a039757eccdd56df50e3359f",
+      "account_verified": false,
+      "account_tag": null
     },
     {
       "id": "2",
@@ -59,7 +63,9 @@
       "start_ts": "1794580966",
       "end_ts": "1794582166",
       "status": "Active",
-      "terms_hash": "d4708a76b10da1708b44bba3f061fe575f02ec598d32dbce88f01f85a30d905b"
+      "terms_hash": "d4708a76b10da1708b44bba3f061fe575f02ec598d32dbce88f01f85a30d905b",
+      "account_verified": false,
+      "account_tag": null
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "method": "get_whitelisted_agents_for_local",
   "args": {},
-  "block_height": 277523869,
-  "block_hash": "9xgnXyZjbp8KGkidHf31JnN2azaS8vWd7PbSLAPZQvwA",
+  "block_height": 277529235,
+  "block_hash": "5fzjrj4W6D2RZEgQajDeSzndEEB9DgknftumgDbnq5ZH",
   "result": [
     "af36c6fede215418fed87b1901143aff495cd5418d51157384d8f78d8877d2ee",
     "e3056536582c2c77e1ad9cb976cf5b4c95fe2dedd5ee95efec3e7237c7f2f8b4"

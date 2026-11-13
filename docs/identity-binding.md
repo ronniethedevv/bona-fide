@@ -15,8 +15,13 @@ Two fields were added to `Mandate`, and Borsh has no field tags, so a contract
 deployed before the merge cannot read its own mandates under the new code. The
 upgrade path is `agent/scripts/upgrade-contract.ts`, which deploys and runs
 `migrate` in one transaction, then verifies every mandate and verdict survived.
-Until a given deployment has been through that, its mandates have no such fields
-and the UI's verified badge stays dark — which is the honest display, not a bug.
+**`bona-fide-rt2.testnet` — the deployment the app reads — has been migrated**
+([tx `2eFn4xY7gWyi…`](https://testnet.nearblocks.io/txns/2eFn4xY7gWyiQS14kRK2a5ePAnXW5V8ZhwveTF4qnnta)): all three mandates
+and their verdicts came through, and every mandate now carries
+`account_verified: false`. The fields are live; no mandate is bound yet.
+`bona-fide-tee1.testnet` has not been migrated, so its mandates still have no
+such fields and the badge stays dark there — which is the honest display, not a
+bug.
 
 A mandate becomes verified only when an attested agent that saw a working
 read-only key calls `attest_account_binding`. Nothing in the migration marks

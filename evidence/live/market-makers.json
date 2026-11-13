@@ -1,8 +1,8 @@
 {
   "method": "list_mms",
   "args": {},
-  "block_height": 277523869,
-  "block_hash": "9xgnXyZjbp8KGkidHf31JnN2azaS8vWd7PbSLAPZQvwA",
+  "block_height": 277529236,
+  "block_hash": "Dm8FnQRzd2wWCUgro5WsZpSma5wuSp5fuL2roC2uasBE",
   "result": [
     {
       "account_id": "experiment-still.testnet",
