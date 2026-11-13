@@ -109,6 +109,13 @@ export function MandatePage() {
         </dl>
 
         <div>
+          {m.status === "Proposed" && (
+            <p className="notice notice-status">
+              Proposed, not co-signed. A market maker can name any account as the project, and naming one does
+              not involve it. Nothing is scored, and no engagement is counted for{" "}
+              <span className="mono">{m.mm}</span>, until <span className="mono">{m.project}</span> co-signs.
+            </p>
+          )}
           <div className="actions">
             {m.status === "Proposed" && (
               <Link to={`/mandate/${m.id}/cosign`} className="btn">
