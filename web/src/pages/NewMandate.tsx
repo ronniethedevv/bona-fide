@@ -97,6 +97,12 @@ export function NewMandate() {
     <section>
       <BackLink to="/directory" label="All market makers" />
       <h1>Create mandate</h1>
+      <p className="lede">
+        You are proposing this as the <strong>market maker</strong>: the mandate records{" "}
+        <span className="mono">{accountId}</span> on that side, and the project account you name below has to
+        co-sign it before anything is scored. If you are the project, the market maker proposes and you
+        co-sign from the mandate page.
+      </p>
       <form className="form" onSubmit={submit}>
         <Field label="Project account">
           <input value={form.project} onChange={set("project")} placeholder="project.testnet" required />
