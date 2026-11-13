@@ -1,5 +1,5 @@
 /* ============================================================================
-   Bona Fide — design system
+   BonaFide — design system
    Dark-first. Three type roles, strictly applied:
      serif  -> display headlines (editorial, human, trustworthy)
      sans   -> prose and UI
@@ -1229,4 +1229,37 @@ h3 {
   font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--muted);
+}
+
+/* Orientation link above a nested page's title. Quiet by default — it is a way
+   out, not a call to action — and large enough to be an easy tap target. */
+.backlink {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-decoration: none;
+}
+.backlink:hover,
+.backlink:focus-visible {
+  color: var(--text);
+}
+@media (max-width: 768px) {
+  .backlink {
+    margin-bottom: 14px;
+  }
+}
+
+/* The directory gained a "Vouched for by" column, which squeezed the two
+   account columns enough to wrap every id onto two lines. Account ids read as
+   one token, so keep them on one line where there is room; below 900px the
+   table scrolls horizontally and wrapping is the right behaviour again. */
+@media (min-width: 900px) {
+  .table td:first-child,
+  .table td.mono {
+    white-space: nowrap;
+  }
 }

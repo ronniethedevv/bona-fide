@@ -1,7 +1,7 @@
 {
   "name": "bona-fide-web",
   "version": "0.1.0",
-  "description": "Bona Fide web app — MM directory, profiles, mandates, create/co-sign, connect key",
+  "description": "BonaFide web app — MM directory, profiles, mandates, create/co-sign, connect key",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",

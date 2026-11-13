@@ -14,7 +14,7 @@ import { theme } from "./theme";
 
 /** What each scene says. Lengths live in timing.ts; content lives here. */
 const CONTENT: Record<SceneId, (p: SceneProps & { clip?: string }) => React.ReactNode> = {
-  title: (p) => <TitleCard {...p} kicker="NEAR · Shade Agent · Intel TDX" title="Bona Fide" />,
+  title: (p) => <TitleCard {...p} kicker="NEAR · Shade Agent · Intel TDX" title="BonaFide" />,
   problem: (p) => (
     <Statement {...p} lines={["Token projects lend their treasury", "to market makers — and cannot prove", "the deal was kept."]} />
   ),

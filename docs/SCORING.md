@@ -1,6 +1,6 @@
 # Scoring specification
 
-The exact rules a Bona Fide verdict is computed from. This is the normative
+The exact rules a BonaFide verdict is computed from. This is the normative
 document: the production scorer (`agent/src/scoring/scorer.ts`) and the
 independent reference implementation (`agent/test/reference-scorer.ts`) are both
 written from it, and a property test cross-checks them against each other.

@@ -1,6 +1,6 @@
 // Owner-only methods. Attestation-related methods are reused from the Shade
 // Agent template (NearDeFi/shade-agent-template @ 816b75b, Apache-2.0); the
-// project allowlist is Bona Fide's.
+// project allowlist is BonaFide's.
 use crate::*;
 
 #[near]
@@ -83,7 +83,7 @@ impl Contract {
             .as_return()
     }
 
-    // --- project allowlist (Bona Fide, phase-1 trust registry) ---
+    // --- project allowlist (BonaFide, phase-1 trust registry) ---
 
     /// Allow or disallow a project account to co-sign mandates.
     pub fn set_project_allowlisted(&mut self, account_id: AccountId, allowed: bool) {

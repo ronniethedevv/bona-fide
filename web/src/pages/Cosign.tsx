@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../near/contract.js";
 import { bps, bpsToPercent, formatQuote, shortHash } from "../near/format.js";
 import type { Mandate } from "../near/types.js";
@@ -21,9 +21,21 @@ export function Cosign() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  if (state.loading) return <p className="muted">Loading…</p>;
+  if (state.loading)
+    return (
+      <section>
+        <BackLink to={`/mandate/${id}`} label={`Mandate #${id}`} />
+        <p className="muted">Loading…</p>
+      </section>
+    );
   const m = state.data?.mandate;
-  if (!m) return <p className="muted">Mandate not found.</p>;
+  if (!m)
+    return (
+      <section>
+        <BackLink to="/directory" label="All market makers" />
+        <p className="muted">Mandate #{id} is not on this contract.</p>
+      </section>
+    );
 
   const isProject = accountId === m.project;
   const canSign = isProject && state.data?.allowlisted && m.status === "Proposed";
@@ -43,6 +55,7 @@ export function Cosign() {
 
   return (
     <section>
+      <BackLink to={`/mandate/${m.id}`} label={`Mandate #${m.id}`} />
       <h1>Co-sign mandate #{m.id}</h1>
       <p className="muted">
         Review the terms and hash. Co-signing activates the mandate and starts the record.

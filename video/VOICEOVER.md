@@ -13,9 +13,9 @@ no stage directions — anything written here gets spoken.
 
 | File | Target | Script |
 |---|---|---|
-| `vo-01-title.mp3` | ~4s | Bona Fide. Proof that a market maker kept its word. |
+| `vo-01-title.mp3` | ~4s | BonaFide. Proof that a market maker kept its word. |
 | `vo-02-problem.mp3` | ~7s | Token projects lend their treasury to market makers, and then they hope. Proving the deal was kept usually means handing over your order book. |
-| `vo-03-landing.mp3` | ~6s | Bona Fide scores the deal inside sealed hardware. The book never leaves the enclave. Only the verdict does. |
+| `vo-03-landing.mp3` | ~6s | BonaFide scores the deal inside sealed hardware. The book never leaves the enclave. Only the verdict does. |
 | `vo-04-directory.mp3` | ~5s | Every market maker, every epoch scored, in public. |
 | `vo-05-pass.mp3` | ~7s | This is an honest mandate. Spread, depth, uptime and loan discipline, measured every epoch and signed on chain. |
 | `vo-06-fail.mp3` | ~7s | And this one broke. The market maker dumped loaned tokens, so the epoch fails on loan cap. The record is permanent, and append only. |
@@ -24,7 +24,7 @@ no stage directions — anything written here gets spoken.
 | `vo-09-terminal.mp3` | ~8s | You do not have to take our word for any of it. Clone the repository and run the scorer yourself. Same code, same verdicts, no wallet and no exchange account. |
 | `vo-10-attest.mp3` | ~9s | The live agent runs inside Intel TDX on Phala Cloud. The contract verifies the hardware quote, and accepts verdicts only from code whose measurements are approved on chain. |
 | `vo-11-closing.mp3` | ~6s | AI may propose. Deterministic code decides. And the log cannot be quietly edited. |
-| `vo-12-end.mp3` | ~5s | Bona Fide. Built at the NEAR hackathon, and live on testnet. |
+| `vo-12-end.mp3` | ~5s | BonaFide. Built at the NEAR hackathon, and live on testnet. |
 
 ## Recording notes
 

@@ -50,7 +50,7 @@ export function Landing() {
             Proof a market maker <em>kept its word.</em>
           </h1>
           <p className="hero-sub">
-            Token projects lend their treasury to market makers and hope. Bona Fide scores the
+            Token projects lend their treasury to market makers and hope. BonaFide scores the
             deal — spread, depth, uptime, loan discipline — inside sealed hardware and writes the
             verdict to NEAR. The order book never leaves the enclave.
           </p>

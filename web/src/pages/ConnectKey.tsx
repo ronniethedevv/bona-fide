@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { BackLink } from "../components/BackLink.js";import { Link, useParams } from "react-router-dom";
 import { resolveEnclavePubkey } from "../near/contract.js";
 import { AGENT_ID, AGENT_URL } from "../near/config.js";
 import { sealKey } from "../near/sealbox.js";
@@ -52,9 +52,10 @@ export function ConnectKey() {
 
   return (
     <section>
+      <BackLink to={`/mandate/${id}`} label={`Mandate #${id}`} />
       <h1>Connect key — mandate #{id}</h1>
       <p className="notice">
-        Create a key with <strong>read permissions only</strong>. Bona Fide rejects keys that can trade or
+        Create a key with <strong>read permissions only</strong>. BonaFide rejects keys that can trade or
         withdraw.
       </p>
       <p className="notice">

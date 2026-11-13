@@ -1,7 +1,7 @@
 # Identity binding
 
 Links a market maker's **NEAR account** to the **exchange account** it actually
-runs, so a Bona Fide track record is a *credential the MM owns* ("this NEAR
+runs, so a BonaFide track record is a *credential the MM owns* ("this NEAR
 identity provably controls this exchange account, and here's its record") rather
 than an unverified claim — **without exposing the account to anyone**.
 

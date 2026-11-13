@@ -20,7 +20,7 @@ export function KeyCheck() {
         <SimulatedBadge />
       </div>
       <p className="notice">
-        This runs Bona Fide's read-only permission check against <strong>canned exchange responses</strong> —
+        This runs BonaFide's read-only permission check against <strong>canned exchange responses</strong> —
         no real key, no exchange account. It is exactly the check the enclave runs on a submitted key.
       </p>
 

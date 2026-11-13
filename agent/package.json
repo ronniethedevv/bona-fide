@@ -1,7 +1,7 @@
 {
   "name": "bona-fide-agent",
   "version": "0.1.0",
-  "description": "Bona Fide Shade Agent — reads a committed MM account read-only inside a TEE, scores it deterministically, and submits signed verdicts to NEAR",
+  "description": "BonaFide Shade Agent — reads a committed MM account read-only inside a TEE, scores it deterministically, and submits signed verdicts to NEAR",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",

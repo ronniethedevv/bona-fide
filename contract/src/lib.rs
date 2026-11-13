@@ -1,4 +1,4 @@
-//! Bona Fide contract — mandate registry and append-only verdict record.
+//! BonaFide contract — mandate registry and append-only verdict record.
 //!
 //! The agent registration / attestation / measurement-approval machinery is
 //! reused from the Shade Agent template (NearDeFi/shade-agent-template @ 816b75b,
@@ -78,7 +78,7 @@ pub struct Contract {
     pub approved_ppids: IterableSet<Ppid>,
     pub agents: IterableMap<AccountId, Agent>,
     pub whitelisted_agents_for_local: IterableSet<AccountId>,
-    // --- Bona Fide ---
+    // --- BonaFide ---
     pub allowlisted_projects: IterableSet<AccountId>,
     pub mandates: IterableMap<u64, Mandate>,
     /// Keyed by `(mandate_id << 32) | epoch`.

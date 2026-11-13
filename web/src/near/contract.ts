@@ -11,7 +11,7 @@ function toBase64(json: string): string {
   return btoa(bin);
 }
 
-/** Read-only view call against the Bona Fide contract. */
+/** Read-only view call against the BonaFide contract. */
 export async function view<T>(methodName: string, args: Record<string, unknown> = {}): Promise<T> {
   if (!CONTRACT_ID) throw new Error("VITE_CONTRACT_ID is not set");
   const res = await provider.query<{ result: number[] }>({
