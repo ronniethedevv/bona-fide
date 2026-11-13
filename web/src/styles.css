@@ -1286,3 +1286,39 @@ h3 {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
+
+/* The project's four-step path. Numbered because the order is the point:
+   proposing and co-signing are different jobs done by different accounts. */
+.flow {
+  max-width: 68ch;
+  margin: 0 0 28px;
+  padding-left: 1.3em;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.flow li {
+  margin-bottom: 10px;
+}
+.flow strong {
+  color: var(--text);
+}
+
+/* Plain vertical list of records — lighter than a table where each row is a
+   sentence rather than a set of columns. */
+.stack {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+}
+.stack li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.6;
+}
+.stack li:last-child {
+  border-bottom: none;
+}
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.8125rem;
+}

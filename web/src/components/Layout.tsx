@@ -6,6 +6,7 @@ import { useWallet } from "../near/WalletContext.js";
 const NAV = [
   { to: "/directory", label: "Directory" },
   { to: "/new", label: "New mandate" },
+  { to: "/for-projects", label: "For projects" },
   { to: "/key-check", label: "Key check" },
 ];
 
