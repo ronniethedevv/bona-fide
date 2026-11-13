@@ -46,8 +46,15 @@ export function MandatePage() {
               </span>
             )}
           </dd>
-          <dt>Project</dt>
-          <dd className="mono">{m.project}</dd>
+          <dt>Project (co-signer)</dt>
+          <dd className="mono">
+            {m.project}
+            {m.project === m.mm && (
+              <div className="caveat" title="The same account proposed this mandate and co-signed it, so no independent party vouched for these terms.">
+                same account on both sides — no independent counterparty
+              </div>
+            )}
+          </dd>
           <dt>Exchange / pair</dt>
           <dd>
             {m.exchange} · {m.pair} <span className="muted">({m.account_label})</span>

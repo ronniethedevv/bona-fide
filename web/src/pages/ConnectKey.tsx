@@ -62,12 +62,24 @@ export function ConnectKey() {
       </p>
 
       {pubkey.loading && <p className="muted">Fetching the enclave key…</p>}
-      {pubkey.error && <p className="error">Could not read the enclave key: {pubkey.error}</p>}
+      {pubkey.error && (
+        <p className="error">Could not read the enclave key from the contract. {pubkey.error}</p>
+      )}
       {!pubkey.loading && !pubkey.data && (
-        <p className="error">The agent has not published its enclave key yet.</p>
+        <p className="notice">
+          No attested agent has published an enclave key on this deployment yet, so a key cannot be sealed
+          to one.
+        </p>
       )}
 
-      {pubkey.data && (
+      {pubkey.data && !AGENT_URL && (
+        <p className="notice">
+          Key intake is offline for this deployment — the enclave is not currently reachable, so there is
+          nowhere to send a key. The record below is unaffected.
+        </p>
+      )}
+
+      {pubkey.data && AGENT_URL && (
         <form className="form form-narrow" onSubmit={submit} autoComplete="off">
           <label className="field">
             <span>API key</span>
@@ -83,10 +95,9 @@ export function ConnectKey() {
               required
             />
           </label>
-          <button className="btn" type="submit" disabled={busy || !AGENT_URL}>
+          <button className="btn" type="submit" disabled={busy}>
             {busy ? "Encrypting…" : "Encrypt in browser & submit"}
           </button>
-          {!AGENT_URL && <p className="muted">Set VITE_AGENT_URL to submit to the agent.</p>}
         </form>
       )}
 

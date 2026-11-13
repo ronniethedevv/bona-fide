@@ -1210,3 +1210,12 @@ h3 {
     padding: 22px 20px;
   }
 }
+
+/* A caveat the record itself implies — stated, not hidden. */
+.caveat {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--simulated);
+}
