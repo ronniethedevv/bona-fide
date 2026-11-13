@@ -30,7 +30,24 @@ const EXECUTABLE = process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium";
 const FFMPEG = process.env.FFMPEG_PATH ?? "ffmpeg";
 const FFPROBE = process.env.FFPROBE_PATH ?? "ffprobe";
 
-const settle = (page, ms = 1200) => page.waitForTimeout(ms);
+/**
+ * Hold on the current state for real time.
+ *
+ * The screencast only emits a frame when something repaints, so a still hold
+ * would otherwise vanish from the timeline entirely. Nudge an imperceptible
+ * repaint a few times a second so the dwell is actually recorded.
+ */
+const settle = async (page, ms = 1200) => {
+  const STEP = 400;
+  for (let waited = 0; waited < ms; waited += STEP) {
+    await page.waitForTimeout(Math.min(STEP, ms - waited));
+    await page
+      .evaluate(() => {
+        document.body.style.opacity = document.body.style.opacity === "0.999" ? "1" : "0.999";
+      })
+      .catch(() => {});
+  }
+};
 
 /** Smooth-scroll so the footage reads as a human browsing, not a jump cut. */
 async function glide(page, to, ms = 1400) {
@@ -40,23 +57,32 @@ async function glide(page, to, ms = 1400) {
 
 const CLIPS = [
   {
+    // Long enough to carry the narration, and paced like someone reading.
     name: "landing",
     run: async (page) => {
       await page.goto(BASE + "/", { waitUntil: "networkidle" });
-      await settle(page, 2200);
-      await glide(page, 620, 1800);
-      await glide(page, 1250, 1800);
+      await settle(page, 2600);
+      await glide(page, 520, 2400);
+      await glide(page, 1180, 2400);
+      await glide(page, 1900, 2400);
+      await settle(page, 1600);
     },
   },
   {
     name: "directory",
     run: async (page) => {
       await page.goto(BASE + "/directory", { waitUntil: "networkidle" });
-      await settle(page, 2400);
+      await settle(page, 2800);
       const row = page.locator("table.table tbody tr").first();
       if (await row.count()) {
         await row.hover();
-        await settle(page, 1600);
+        await settle(page, 2200);
+      }
+      const search = page.locator("input.search");
+      if (await search.count()) {
+        await search.click();
+        await search.type("experiment", { delay: 110 });
+        await settle(page, 2400);
       }
     },
   },
@@ -64,41 +90,49 @@ const CLIPS = [
     name: "mandate-pass",
     run: async (page) => {
       await page.goto(BASE + "/mandate/0", { waitUntil: "networkidle" });
-      await settle(page, 2200);
+      await settle(page, 2800);
       const cells = page.locator(".timeline .cell");
-      if (await cells.count()) {
-        await cells.first().click();
-        await settle(page, 2600);
+      const n = await cells.count();
+      if (n > 0) {
+        await cells.nth(0).click();
+        await settle(page, 3600);
       }
+      if (n > 1) {
+        await cells.nth(1).click();
+        await settle(page, 3600);
+      }
+      await settle(page, 1400);
     },
   },
   {
     name: "mandate-fail",
     run: async (page) => {
       await page.goto(BASE + "/mandate/1", { waitUntil: "networkidle" });
-      await settle(page, 2200);
+      await settle(page, 3000);
       const cells = page.locator(".timeline .cell");
       if (await cells.count()) {
         await cells.first().click();
-        await settle(page, 3000);
+        // Hold on LOAN_CAP: this is the shot the whole film is built around.
+        await settle(page, 6500);
       }
+      await settle(page, 1600);
     },
   },
   {
     name: "keycheck",
     run: async (page) => {
       await page.goto(BASE + "/key-check", { waitUntil: "networkidle" });
-      await settle(page, 1800);
+      await settle(page, 2400);
       const run = page.getByRole("button", { name: /run the check/i });
       await run.click(); // defaults to a trade-enabled key -> rejected
-      await settle(page, 2400);
+      await settle(page, 3600);
       const select = page.locator("select");
       const options = await select.locator("option").allTextContents();
       const readOnly = options.findIndex((t) => /read.?only/i.test(t));
       await select.selectOption({ index: readOnly >= 0 ? readOnly : 0 });
-      await settle(page, 900);
+      await settle(page, 1600);
       await run.click();
-      await settle(page, 2400);
+      await settle(page, 3400);
     },
   },
 ];
@@ -152,7 +186,9 @@ async function record(browser, clip) {
     const file = join(work, `f${String(i).padStart(6, "0")}.jpg`);
     writeFileSync(file, Buffer.from(f.data, "base64"));
     const next = frames[i + 1];
-    const dur = next ? Math.min(Math.max(next.ts - f.ts, 1 / 60), 2) : 0.6;
+    // The screencast only emits on change, so a still moment arrives as one
+    // frame with a long gap after it. Keep that gap: it IS the dwell time.
+    const dur = next ? Math.min(Math.max(next.ts - f.ts, 1 / 60), 8) : 0.8;
     lines.push(`file '${file}'`, `duration ${dur.toFixed(4)}`);
   });
   lines.push(`file '${join(work, `f${String(frames.length - 1).padStart(6, "0")}.jpg`)}'`);

@@ -10,7 +10,9 @@
     "studio": "remotion studio",
     "render": "remotion render src/index.ts Demo out/bona-fide-demo.mp4 --browser-executable=/opt/pw-browsers/chromium",
     "typecheck": "tsc --noEmit",
-    "analyze": "node scripts/analyze-vo.mjs"
+    "analyze": "node scripts/analyze-vo.mjs",
+    "vo": "node scripts/generate-vo.mjs",
+    "master": "ffmpeg -y -hide_banner -loglevel error -i out/bona-fide-demo.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/bona-fide-demo-master.mp4"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",

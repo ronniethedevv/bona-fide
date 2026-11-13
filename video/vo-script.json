@@ -1,0 +1,14 @@
+{
+  "vo-01-title": "Bona Fide. Proof that a market maker kept its word.",
+  "vo-02-problem": "Token projects lend their treasury to market makers, and then they hope. Proving the deal was kept usually means handing over your order book.",
+  "vo-03-landing": "Bona Fide scores the deal inside sealed hardware. The book never leaves the enclave. Only the verdict does.",
+  "vo-04-directory": "Every market maker, every epoch scored, in public.",
+  "vo-05-pass": "This is an honest mandate. Spread, depth, uptime and loan discipline, measured every epoch and signed on chain.",
+  "vo-06-fail": "And this one broke. The market maker dumped loaned tokens, so the epoch fails on loan cap. The record is permanent, and append only.",
+  "vo-07-keycheck": "Before the first read, the enclave asks the exchange what the key is allowed to do. A key that can trade or withdraw is rejected on sight.",
+  "vo-08-readonly": "Most agentic finance is about safely letting an agent spend. This one never spends. The fund movement attack surface is gone, not guarded.",
+  "vo-09-terminal": "You do not have to take our word for any of it. Clone the repository and run the scorer yourself. Same code, same verdicts, no wallet and no exchange account.",
+  "vo-10-attest": "The live agent runs inside Intel TDX on Phala Cloud. The contract verifies the hardware quote, and accepts verdicts only from code whose measurements are approved on chain.",
+  "vo-11-closing": "AI may propose. Deterministic code decides. And the log cannot be quietly edited.",
+  "vo-12-end": "Bona Fide. Built at the NEAR hackathon, and live on testnet."
+}
